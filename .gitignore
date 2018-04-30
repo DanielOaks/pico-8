@@ -69,4 +69,4 @@ $RECYCLE.BIN/
 
 # pico-8
 /demos
-
+*.bin/
