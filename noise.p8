@@ -1,6 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
+-- messy perlin noise thing
 seed = 82.4
 phase = 5
 
@@ -9,12 +10,12 @@ draw_i = 0
 draw_i_phase = 6
 
 cols = {
-		8,2,1,12,3,9,
-		8,2,1,12,3,9,
-		8,2,1,12,3,9,
-		8,2,1,12,3,9,
-		8,2,1,12,3,9,
-		8,2,1,12,3,9,
+  8,2,1,12,3,9,
+  8,2,1,12,3,9,
+  8,2,1,12,3,9,
+  8,2,1,12,3,9,
+  8,2,1,12,3,9,
+  8,2,1,12,3,9,
 }
 current_col_offset = 0
 max_col = 6
@@ -25,94 +26,92 @@ pixnext = {}
 gentime = seed -- start off at seed value
 
 function _init()
-		cur.x = -1
-		cur.y = 0
-		
-		for x=0,128 do
-				pix[x] = {}
-				pixnext[x] = {}
-		end
+  cur.x = -1
+  cur.y = 0
+  
+  for x=0,128 do
+    pix[x] = {}
+    pixnext[x] = {}
+  end
 end
 
 function nextpix()
-		cur.x += 1
-		if cur.x == 128 then
-				cur.x = 0
-				cur.y += 1
-				if cur.y == 128 then
-						cur.y = 0
-						gentime += 0.3
-						phase += 0.3
+  cur.x += 1
+  if cur.x == 128 then
+    cur.x = 0
+    cur.y += 1
+    if cur.y == 128 then
+      cur.y = 0
+      gentime += 0.3
+      phase += 0.3
 
-						for x=0, 128 do
-								for y=0, 128 do
-										pix[x][y] = pixnext[x][y]
-								end
-						end
-				end
-		end
+      for x=0, 128 do
+        for y=0, 128 do
+          pix[x][y] = pixnext[x][y]
+        end
+      end
+    end
+  end
 end
 
 function _update()
-		for i=0,300 do
-				nextpix()
-				val = noise((cur.x/128) * phase,(cur.y/128) * phase,gentime)
- 			pixnext[cur.x][cur.y] = val
-		end
+  for i=0,300 do
+    nextpix()
+    val = noise((cur.x/128) * phase,(cur.y/128) * phase,gentime)
+    pixnext[cur.x][cur.y] = val
+  end
 end
 
 function _draw()
-		draw_i += 1
-		if draw_i == draw_i_phase then
-				draw_i = 0
-		end
-		if draw_i == 0 then
-  		for x=0, 128 do
-  				for y=0, 128 do
-  						val = pix[x][y]
-  						if val == nil then
-  								break
-  						end
-  				
-  					 if val < -0.32 then
-  					 		col = 8
-  					 elseif val < -0.66 then
-  					 		col = 2
-  					 elseif val < 0 then
-  					 		col = 1
-  					 elseif val < 0.34 then
-  					 		col = 12
-  					 elseif val < 0.78 then
-  					 		col = 3
-  					 else
-  					 		col = 9
-  					 end
-  					 
-  					 sset(x,y,col)
-  				end
-  		end
-  		
-  		current_col_offset += 1
-  		if current_col_offset == max_col then
-  				current_col_offset = 0
-  		end
-  		for i=0, max_col do
-  				pal(cols[i], cols[i+current_col_offset], 0)
-  		end
+  draw_i += 1
+  if draw_i == draw_i_phase then
+    draw_i = 0
+  end
+  if draw_i == 0 then
+    for x=0, 128 do
+      for y=0, 128 do
+        val = pix[x][y]
+        if val == nil then
+          break
+        end
+      
+        if val < -0.32 then
+          col = 8
+        elseif val < -0.66 then
+          col = 2
+        elseif val < 0 then
+          col = 1
+        elseif val < 0.34 then
+          col = 12
+        elseif val < 0.78 then
+          col = 3
+        else
+          col = 9
+        end
+        
+        sset(x,y,col)
+      end
+    end
+    
+    current_col_offset += 1
+    if current_col_offset == max_col then
+      current_col_offset = 0
+    end
+    for i=0, max_col do
+      pal(cols[i], cols[i+current_col_offset], 0)
+    end
 
-				spr(0,0,0,16,16)
-				
-				pal()
-		end
+    spr(0,0,0,16,16)
+    
+    pal()
+  end
 
-		current += 1
-		if current == 16 then
-				current = 0
-		end
-		pset(1,1,current)
+  current += 1
+  if current == 16 then
+    current = 0
+  end
+  pset(1,1,current)
 end
-
-
 
 
 
