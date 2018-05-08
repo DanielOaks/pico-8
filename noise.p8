@@ -1,34 +1,63 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
-seed = 60
-phase = 7
+seed = 52.4
+phase = 2
 
+current = 0
+
+cur = {}
+pix = {}
 gentime = seed -- start off at seed value
 
-function _draw()
-		gentime += 0.2
-		local val = 0
-		local col = 0
-		for x=0, 128 do
-				for y=0, 128 do
-					 val = noise((x/128) * phase,(y/128) * phase,gentime)
-					 val = val + 1
-					 val = val / 2
-					 
-					 if val < 0.25 then
+function _init()
+		cur.x = -1
+		cur.y = 0
+		
+		for x=0,128 do
+				pix[x] = {}
+		end
+end
+
+function nextpix()
+		cur.x += 1
+		if cur.x == 128 then
+				cur.x = 0
+				cur.y += 1
+				if cur.y == 128 then
+						cur.y = 0
+						gentime += 0.2
+						phase += 0.1
+				end
+		end
+end
+
+function _update60()
+		for i=0,210 do
+				nextpix()
+				val = noise((cur.x/128) * phase,(cur.y/128) * phase,gentime)
+ 			pix[cur.x][cur.y] = val
+ 			
+					 if val < -0.5 then
 					 		col = 1
-					 elseif val < 0.50 then
+					 elseif val < 0 then
 					 		col = 2
-					 elseif val < 0.75 then
+					 elseif val < 0.5 then
 					 		col = 8
 					 else
 					 		col = 14
 					 end
 					 
-					 pset(x,y,col)
-				end
+					 pset(cur.x,cur.y,col)
 		end
+end
+
+function _draw()
+		current += 1
+		if current == 16 then
+				current = 0
+		end
+		pset(1,1,current)
 end
 
 
