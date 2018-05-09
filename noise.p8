@@ -3,11 +3,15 @@ version 16
 __lua__
 -- messy perlin noise thing
 seed = 82.4
-phase = 5
+phase = 0.6
 
 current = 0
 draw_i = 0
-draw_i_phase = 6
+draw_i_phase = 1
+pixels_per_update = 600
+ppu_first_frame = 300
+
+first_frame_generated = false
 
 cols = {
   8,9,10,11,12,13,14,
@@ -41,6 +45,7 @@ function _init()
   end
   
   music(0)
+  cls()
 end
 
 function nextpix()
@@ -52,6 +57,10 @@ function nextpix()
       cur.y = 0
       gentime += 0.3
       phase += 0.3
+      
+      if first_frame_generated == false then
+								first_frame_generated = true
+						end
 
       for x=0, 128 do
         for y=0, 128 do
@@ -63,7 +72,12 @@ function nextpix()
 end
 
 function _update()
-  for i=0,300 do
+		local ppu = pixels_per_update
+		if first_frame_generated == false then
+				ppu = ppu_first_frame
+		end
+
+  for i=0,ppu do
     nextpix()
     val = noise((cur.x/128) * phase,(cur.y/128) * phase,gentime)
     pixnext[cur.x][cur.y] = val
@@ -84,17 +98,31 @@ function _draw()
           break
         end
       
-        if val < -0.71 then
+        if val < -0.86 then
           col = 8
-        elseif val < -0.42 then
+        elseif val < -0.71 then
           col = 9
-        elseif val < -0.14 then
+        elseif val < -0.57 then
           col = 10
-        elseif val < 0.14 then
+        elseif val < -0.43 then
           col = 11
-        elseif val < 0.43 then
+        elseif val < -0.29 then
           col = 12
+        elseif val < -0.14 then
+          col = 13
+        elseif val < 0 then
+          col = 14
+        elseif val < 0.14 then
+          col = 8
+        elseif val < 0.29 then
+          col = 9
+        elseif val < 0.43 then
+          col = 10
+        elseif val < 0.57 then
+          col = 11
         elseif val < 0.71 then
+          col = 12
+        elseif val < 0.86 then
           col = 13
         else
           col = 14
@@ -112,7 +140,7 @@ function _draw()
       pal(cols[i], cols[i+current_col_offset], 0)
     end
 
-    spr(0,0,0,16,16)
+    spr(1,0,0,16,16)
     
     pal()
   end
@@ -212,9 +240,9 @@ function noise(x, y, z)
 end
 
 __gfx__
-82200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-80c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-93300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000822000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000080c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000933000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 00010000000000000000000300000000031000000002e0002e0002e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
