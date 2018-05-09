@@ -11,8 +11,6 @@ draw_i_phase = 1
 pixels_per_update = 600
 ppu_first_frame = 300
 
-first_frame_generated = false
-
 cols = {
   8,9,10,11,12,13,14,
   8,9,10,11,12,13,14,
@@ -28,25 +26,13 @@ current_col_offset = 0
 max_col = 7
 
 cur = {}
+pixcols = {}
 pix = {}
 pixnext = {}
 gentime = seed -- start off at seed value
 
 tag_t = 0
 tag_col = 0
-
-function _init()
-  cur.x = -1
-  cur.y = 0
-  
-  for x=0,128 do
-    pix[x] = {}
-    pixnext[x] = {}
-  end
-  
-  music(0)
-  cls()
-end
 
 function nextpix()
   cur.x += 1
@@ -57,21 +43,102 @@ function nextpix()
       cur.y = 0
       gentime += 0.3
       phase += 0.3
-      
-      if first_frame_generated == false then
-								first_frame_generated = true
-						end
 
       for x=0, 128 do
         for y=0, 128 do
-          pix[x][y] = pixnext[x][y]
+										val = pixnext[x][y]
+										if val == nil then
+												break
+										end
+										
+          pix[x][y] = val
+
+          if val < -0.86 then
+            col = 8
+          elseif val < -0.71 then
+            col = 9
+          elseif val < -0.57 then
+            col = 10
+          elseif val < -0.43 then
+            col = 11
+          elseif val < -0.29 then
+            col = 12
+          elseif val < -0.14 then
+            col = 13
+          elseif val < 0 then
+            col = 14
+          elseif val < 0.14 then
+            col = 8
+          elseif val < 0.29 then
+            col = 9
+          elseif val < 0.43 then
+            col = 10
+          elseif val < 0.57 then
+            col = 11
+          elseif val < 0.71 then
+            col = 12
+          elseif val < 0.86 then
+            col = 13
+          else
+            col = 14
+          end
+          sset(x,y,col)
         end
       end
     end
   end
 end
 
-function _update()
+function _init()
+  for x=0,128 do
+    pix[x] = {}
+    pixnext[x] = {}
+  end
+  
+  music(0)
+  cls()
+  
+  -- primary game loop
+  -- just generate the initial image
+  -- as fast as we can
+  ::init::
+
+  cur.x = 0
+  cur.y = 0
+
+		for i=0, 128*128 do
+    val = noise((cur.x/128) * phase,(cur.y/128) * phase,gentime)
+    pixnext[cur.x][cur.y] = val
+    nextpix()
+  end
+  
+  spr(0,0,0,16,16)
+  
+  music(1)
+  ::start::
+		for i=0, 128*13 do
+    val = noise((cur.x/128) * phase,(cur.y/128) * phase,gentime)
+    pixnext[cur.x][cur.y] = val
+    nextpix()
+  end
+
+  current_col_offset += 1
+  if current_col_offset == max_col then
+    current_col_offset = 0
+  end
+  for i=0, max_col do
+    pal(cols[i], cols[i+current_col_offset], 0)
+  end
+  
+  spr(0,0,0,16,16)
+  
+  pal()
+  
+  goto start
+end
+
+
+function _updaate()
 		local ppu = pixels_per_update
 		if first_frame_generated == false then
 				ppu = ppu_first_frame
@@ -85,7 +152,7 @@ function _update()
   tag_t += 0.02
 end
 
-function _draw()
+function _draaw()
   draw_i += 1
   if draw_i == draw_i_phase then
     draw_i = 0
@@ -98,35 +165,6 @@ function _draw()
           break
         end
       
-        if val < -0.86 then
-          col = 8
-        elseif val < -0.71 then
-          col = 9
-        elseif val < -0.57 then
-          col = 10
-        elseif val < -0.43 then
-          col = 11
-        elseif val < -0.29 then
-          col = 12
-        elseif val < -0.14 then
-          col = 13
-        elseif val < 0 then
-          col = 14
-        elseif val < 0.14 then
-          col = 8
-        elseif val < 0.29 then
-          col = 9
-        elseif val < 0.43 then
-          col = 10
-        elseif val < 0.57 then
-          col = 11
-        elseif val < 0.71 then
-          col = 12
-        elseif val < 0.86 then
-          col = 13
-        else
-          col = 14
-        end
         
         sset(x,y,col)
       end
@@ -140,7 +178,7 @@ function _draw()
       pal(cols[i], cols[i+current_col_offset], 0)
     end
 
-    spr(1,0,0,16,16)
+    spr(0,0,0,16,16)
     
     pal()
   end
@@ -253,8 +291,8 @@ __sfx__
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0110002019043190351a035275211d0251e0261f025210252302323025250252702527032290462a0452b0552c0532c0652c0652f4612b0652b0562a065290552505323045200452e7311f0351f0221f01221025
-0108000003614056100661008610096100a6100b6100c6100d6100d6100e6100e6100f61010610106101161012610136101362114620156201762018620196201a6201b6201d6201f62020631206301f63019635
+010800200c6100c6100c6100c6100c6100c6100c6100c6100c6100c6100c6130c6100c6100c6100c6100c6100c6100c6100c6100c6100c6100c6100c6130c6100c6100c6100c6100c6100c6100c6100c6100c610
 __music__
-00 09424344
+03 09424344
 03 08424344
 
