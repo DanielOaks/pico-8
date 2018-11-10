@@ -39,7 +39,21 @@ function _init()
 end
 
 function _update()
-  -- _update() is required for game loop 
+		if (btn(0)) then
+ 			ship.x -= 1.2;
+  end
+		if (btn(1)) then
+ 			ship.x += 1.2;
+  end
+  ship.x = mid(-8, ship.x, 128)
+
+		if (btn(2)) then
+ 			ship.y -= 1.2;
+  end
+		if (btn(3)) then
+ 			ship.y += 1.2;
+  end
+  ship.y = mid(-8, ship.y, 128)
 end
  
 function _draw()
