@@ -15,12 +15,6 @@ cols = {
   8,9,10,11,12,13,14,
   8,9,10,11,12,13,14,
   8,9,10,11,12,13,14,
-  8,2,1,12,3,9,
-  8,2,1,12,3,9,
-  8,2,1,12,3,9,
-  8,2,1,12,3,9,
-  8,2,1,12,3,9,
-  8,2,1,12,3,9,
 }
 current_col_offset = 0
 max_col = 7
@@ -136,69 +130,6 @@ function _init()
   
   goto start
 end
-
-
-function _updaate()
-		local ppu = pixels_per_update
-		if first_frame_generated == false then
-				ppu = ppu_first_frame
-		end
-
-  for i=0,ppu do
-    nextpix()
-    val = noise((cur.x/128) * phase,(cur.y/128) * phase,gentime)
-    pixnext[cur.x][cur.y] = val
-  end
-  tag_t += 0.02
-end
-
-function _draaw()
-  draw_i += 1
-  if draw_i == draw_i_phase then
-    draw_i = 0
-  end
-  if draw_i == 0 then
-    for x=0, 128 do
-      for y=0, 128 do
-        val = pix[x][y]
-        if val == nil then
-          break
-        end
-      
-        
-        sset(x,y,col)
-      end
-    end
-    
-    current_col_offset += 1
-    if current_col_offset == max_col then
-      current_col_offset = 0
-    end
-    for i=0, max_col do
-      pal(cols[i], cols[i+current_col_offset], 0)
-    end
-
-    spr(0,0,0,16,16)
-    
-    pal()
-  end
-
-  current += 1
-  if current == 16 then
-    current = 0
-  end
-  pset(1,1,current)
-  
-  tag_col += 1
-  if tag_col == max_col*2 then
-  		tag_col = 0
-  end
-  print("n", 2,  100+sin(tag_t*2-0.7)*1.5, cols[tag_col/2])
-  print("o", 6,  100+sin(tag_t*2-0.5)*1.5, cols[tag_col/2])
-  print("i", 10, 100+sin(tag_t*2-0.3)*1.5, cols[tag_col/2])
-  print("z", 14, 100+sin(tag_t*2-0.1)*1.5, cols[tag_col/2])
-end
-
 
 
 -- copyright (c) 2016 takashi kitao
