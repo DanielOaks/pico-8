@@ -7,8 +7,19 @@ cls()
 music(0)
 
 function _draw()
-	print("snail's house", 1, 1, 1)
-	spr(224, 38, 40, 8, 2)
+		cls()
+		color(1)
+		rectfill(0, 0, 127, 127)
+		
+		color(7)
+ 	print("snail's house", 1, 1)
+
+		scenet = time()
+		extra_y = sin(scenet*0.325)*13
+		if scenet < 2 then
+				extra_y *= scenet / 2
+		end
+ 	spr(224, 38, 37.5 + extra_y, 8, 2)
 end
 
 __gfx__
