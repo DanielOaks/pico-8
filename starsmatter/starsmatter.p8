@@ -9,7 +9,10 @@ scene_start_time = 0
 base_time = 0
 
 scene_list = {
-		"intro-popup",
+		"intro-pixienop",
+		"intro-starsmatter",
+		"intro-black",
+		"intro-popin",
 }
 -- here, we input times in a relative way,
 -- but _init turns them into absolutes.
@@ -19,7 +22,10 @@ scene_list = {
 -- moving times over?
 scene_end_time = {}
 scene_end_rtime = {}
-scene_end_rtime["intro-popup"] = 3
+scene_end_rtime["intro-pixienop"] = 3
+scene_end_rtime["intro-starsmatter"] = 3
+scene_end_rtime["intro-black"] = 1.25
+scene_end_rtime["intro-popin"] = 10
 
 tprint_current_i = 0 -- 0 so it prints on first char
 
@@ -78,8 +84,9 @@ function _draw()
 		local st = scenetime()
 
 		-- draw scene details
-		if scene == "intro-popup" then
+		if scene == "intro-pixienop" then
 				if scene_just_entered then
+						music(-1)
 						sfx(1)
 				end
 		
@@ -98,10 +105,9 @@ function _draw()
 				pal()
 				
 				local tstate = st
-				if st < 0.7 then
+				if st < 0.25 then
 						tstate = 0
-				elseif st < 1.5 then
-						tstate = st - 0.5
+				elseif st < 1.35 then
 						tstate *= 11
 						tstate = flr(tstate)
 						while 3 < tstate do
@@ -127,20 +133,57 @@ function _draw()
 				end
 				spr(176, 25, 39, 9, 5)
 
-				if st < 0.5 then
+				if st < 0.5 or 1.9 < st then
 						pal()
 						color(1)
-						local fp = 0b0000000000000000
 						local stf = st
-						while 0.02 < stf do
-								fp = shl(fp, 1)
-								fp += 0b1
-								stf -= 0.02
-						end
+						local fp = 0b0
+						if st < 0.5 then
+  						fp = 0b0000000000000000
+  						while 0.02 < stf do
+  								fp = shl(fp, 1)
+  								fp += 0b1
+  								stf -= 0.02
+  						end
+  				elseif 1.9 < st then
+  						fp = 0b1111111111111111
+  						while 1.9 < stf do
+  								fp = shl(fp, 1)
+  								stf -= 0.035
+  						end
+  				end
 						fillp(fp + 0b0.1)
 						rectfill(0, 40, 128, 80)
 						fillp()
 				end
+		elseif scene == "intro-starsmatter" then
+				if scene_just_entered then
+						music(1)
+				end
+				
+				cls()
+				color(1)
+				rectfill(0, 0, 128, 128)
+				
+				if 128 < st*100 then				
+						color(0)
+						rectfill(0, 61 - min(st*100-128, 128)*0.85, 128, 67 + min(st*100-128, 128)*0.85)
+
+  				color(1)
+  				rectfill(0, 61, 128, 67)
+				end
+				
+				color(7)
+				rectfill(0, 60, min(st*100, 128), 60)
+				rectfill(128 - min(st*100, 128), 68, 128, 68)
+				
+				tprint("star-smatter", scene_start_time, demotime(), 0.05, nil, 41, 62)
+		elseif scene == "intro-black" then
+  		color(0)
+  		rectfill(0, 0, 128, min(st*100, 128))
+		elseif scene == "intro-popin" then
+  		color(14)
+  		rectfill(0, 0, 128, min(st*100, 128))
 		end
 
 		-- centre line
