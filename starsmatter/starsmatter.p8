@@ -24,7 +24,7 @@ scene_end_rtime = {}
 scene_end_rtime["intro-pixienop"] = 3
 scene_end_rtime["intro-starsmatter"] = 3
 scene_end_rtime["intro-black"] = 1.25
-scene_end_rtime["intro-popin"] = 10
+scene_end_rtime["intro-popin"] = 15
 
 tprint_current_i = {} -- default is 0 so it prints on first char
 
@@ -185,6 +185,19 @@ function _draw()
   		color(1)
   		rectfill(0, 128, 128, 128 - min(st*100, 128))
 				
+				-- draw charge-up
+				if 9.25 < st then
+						-- do it
+				end
+				
+				-- draw the lazar
+				pal(1, 6)
+				pal(4, 5)
+				pal(2, 0)
+				color(13)
+				spr(153, 38, 97 + 50 - 50 * min(st * 0.1, 1), 6, 3)
+				pal()
+				
 				-- draw mountains
 				spr(96, 0, 104 + 128 - min(st*100, 128), 16, 3)
 
@@ -195,7 +208,12 @@ function _draw()
   		pal()
   		
 				color(7)
-				if 4.7 < st then
+				if 8.75 < st then
+						print("project star-smatter.", 20, 62)
+						tprint("our last hope.", scene_start_time+8.75, demotime(), 0.1, nil, 20, 68)
+				elseif 6.75 < st then
+						tprint("project star-smatter.", scene_start_time+6.75, demotime(), 0.075, nil, 20, 62)
+				elseif 4.7 < st then
 						print("we all knew that this", 20, 62)
 						print("day would come...", 20, 68)
 				elseif 3.6 < st then
