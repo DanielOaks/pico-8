@@ -18,8 +18,7 @@ scene_list = {
 -- but _init turns them into absolutes.
 --
 -- todo(dan): should we do this with ms to
--- prevent floating point weirdness when
--- moving times over?
+-- prevent floating point scene/music desyncs?
 scene_end_time = {}
 scene_end_rtime = {}
 scene_end_rtime["intro-pixienop"] = 3
@@ -27,7 +26,7 @@ scene_end_rtime["intro-starsmatter"] = 3
 scene_end_rtime["intro-black"] = 1.25
 scene_end_rtime["intro-popin"] = 10
 
-tprint_current_i = 0 -- 0 so it prints on first char
+tprint_current_i = {} -- default is 0 so it prints on first char
 
 -- demotime returns the current time,
 -- fixed for demo replays and such :)
@@ -194,6 +193,17 @@ function _draw()
   		spr(144, 0, 112 + 128 - min(st*100, 128), 8, 2)
   		spr(144, 64, 112 + 128 - min(st*100, 128), 8, 2)
   		pal()
+  		
+				color(7)
+				if 4.7 < st then
+						print("we all knew that this", 20, 62)
+						print("day would come...", 20, 68)
+				elseif 3.6 < st then
+						print("we all knew that this", 20, 62)
+						tprint("day would come...", scene_start_time+3.6, demotime(), 0.05, nil, 20, 68)
+  		elseif 2.5 < st then
+						tprint("we all knew that this", scene_start_time+2.5, demotime(), 0.05, nil, 20, 62)
+  		end
 		end
 
 		-- centre line
@@ -213,14 +223,27 @@ end
 -- - per-character sound effect
 -- - <other standard print() args>
 function tprint(text, start_time, current_time, per_char_delay, per_char_sound, x, y, col)
+		_tprint("1", text, start_time, current_time, per_char_delay, per_char_sound, x, y, col)
+end
+function tprint2(text, start_time, current_time, per_char_delay, per_char_sound, x, y, col)
+		_tprint("2", text, start_time, current_time, per_char_delay, per_char_sound, x, y, col)
+end
+
+-- 'shard' is a rough way to handle
+-- multiple tprints at once
+function _tprint(shard, text, start_time, current_time, per_char_delay, per_char_sound, x, y, col)
+		if tprint_current_i[shard] == nil then
+				tprint_current_i[shard] = 0
+		end
+
 		far_i = 1
 		for i=1, #text do
 				if start_time + per_char_delay * (i - 1) <= current_time then
 						far_i = i
 				end
 		end
-		if tprint_current_i != far_i then
-				tprint_current_i = far_i
+		if tprint_current_i[shard] != far_i then
+				tprint_current_i[shard] = far_i
 				-- skip spaces
 				if sub(text, far_i, far_i) != " " then
   				if per_char_sound != nil then
