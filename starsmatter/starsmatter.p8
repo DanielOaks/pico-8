@@ -427,7 +427,7 @@ function _draw()
   		pattern_vase_phase *= min(1, max(0, st*0.25 - 3))
 
 				-- really messes up the vase pattern after a while~
-  		local extra_phase = min(20, max(1, st*0.45 - 10))
+  		local extra_phase = min(20, max(1, st*0.45 - 8))
   		extra_phase *= min(1, max(0, 20 - st*0.45))
   		if extra_phase < 1 then
 		  		pattern_vase_phase *= extra_phase
