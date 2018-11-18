@@ -9,12 +9,14 @@ scene_start_time = 0
 base_time = 0
 
 scene_list = {
+		"effect-bars",
+
 		"intro-pixienop",
 		"intro-starsmatter",
 		"intro-black",
 		"intro-popin",
 		"intro-popin-fadeout",
-		"effect-bars",
+		--"effect-bars",
 }
 -- here, we input times in a relative way,
 -- but _init turns them into absolutes.
@@ -28,7 +30,7 @@ scene_end_rtime["intro-starsmatter"] = 3.2
 scene_end_rtime["intro-black"] = 1
 scene_end_rtime["intro-popin"] = 15.6
 scene_end_rtime["intro-popin-fadeout"] = 1
-scene_end_rtime["effect-bars"] = 5
+scene_end_rtime["effect-bars"] = 50
 
 
 -- effect vars
@@ -38,7 +40,8 @@ charging_sprites = {
 
 rb_width = 3
 rb_width_mod = rb_width / -2 -- helps centre things
-rb_phase = 0.03
+rb_phase = 0.04
+rb_current_sync = 0
 rb_rainbow_pattern = {
 		8,9,10,11,3,12,2,14,
 		--8,9,10,3,1,2,14,
@@ -90,6 +93,11 @@ function _update()
 								break
 						end
 				end
+		end
+		
+		rb_current_sync += 0.0015
+		if 1 < rb_current_sync then
+				rb_current_sync -= 1
 		end
 end
 
@@ -298,32 +306,48 @@ function _draw()
   		
   		-- draw rasterbars
   		local pattern_width = 24
-  		local rb_height = 10
+  		local pattern_width_mod = 10
+  		local pattern_height = 62 - max(0, 100-st*55)
+  		local pattern_height_mod = 10
+  		local pattern_height_perspective = 10
+  		local rb_swirl_phase = 0 -- doesn't work right, lol
   		
   		for i = 1, #rb_rainbow_pattern, 1 do
     		local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
+    		local y1 = pattern_height+cos((st / 2)+0.25-(rb_phase*i))*pattern_height_perspective+sin((st*0.5)+(i*rb_current_sync))*pattern_height_mod
     		if flr(((st-(rb_phase*i)) + 0.5) % 2) == 1 then
       		color(rb_rainbow_pattern[i])
-      		--rectfill(x1+rb_width_mod, 0, x1+rb_width+rb_width_mod, 128)
-      		rectfill(x1+rb_width_mod, 68+cos((st / 2)+0.25-(rb_phase*i))*rb_height, x1+rb_width+rb_width_mod, 128)
+      		--rectfill(x1+rb_width_mod, y1, x1+rb_width+rb_width_mod, 128)
+      		for y2 = 128, y1, -1 do
+      				local x2 = 128/2 + flr(cos((st / 2)-(rb_phase*i)+sin(y2*rb_swirl_phase))*pattern_width)
+      				rectfill(x2+rb_width_mod, y2, x2+rb_width+rb_width_mod, y2)
+      		end
       end
   		end
   
   		for i = #rb_rainbow_pattern, 1, -1 do
     		local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
+    		local y1 = pattern_height+cos((st / 2)+0.25-(rb_phase*i))*pattern_height_perspective+sin((st*0.5)+(i*rb_current_sync))*pattern_height_mod
     		if flr(((st-(rb_phase*i)) + 0.5) % 2) == 0 then
       		color(rb_rainbow_pattern[i])
-      		--rectfill(x1+rb_width_mod, 0, x1+rb_width+rb_width_mod, 128)
-      		rectfill(x1+rb_width_mod, 68+cos((st / 2)+0.25-(rb_phase*i))*rb_height, x1+rb_width+rb_width_mod, 128)
+      		--rectfill(x1+rb_width_mod, y1, x1+rb_width+rb_width_mod, 128)
+      		for y2 = 128, y1, -1 do
+      				local x2 = 128/2 + flr(cos((st / 2)-(rb_phase*i)+sin(y2*rb_swirl_phase))*pattern_width)
+      				rectfill(x2+rb_width_mod, y2, x2+rb_width+rb_width_mod, y2)
+      		end
       end
   		end
+  		
+  		-- draw intro fade-in
+  		color(0)
+  		rectfill(0, -1, 128, 128 - min(st*600, 129))
 		end
 		
 		-- print scene time lol
 		color(1)
-		--rectfill(99, 0, 128, 6)
+		rectfill(99, 0, 128, 6)
 		color(14)
-		--print(st, 100, 1)
+		print(st, 100, 1)
 
 		-- centre line
 		--rectfill(63, 0, 64, 128)
