@@ -7,6 +7,7 @@ scene = "0"
 scene_just_entered = true
 scene_start_time = 0
 base_time = 0
+show_debug = false
 
 scene_list = {
 		--"cls",
@@ -87,6 +88,10 @@ function _init()
 end
 
 function _update()
+		if btnp(4) then
+				show_debug = not show_debug
+		end
+
 		if scene_end_time[scene] < demotime() then
 				scene_just_entered = true
 				for i=1, #scene_list do
@@ -478,17 +483,25 @@ function _draw()
       		end
 		  		end
 		  end
+		  pal()
   		
   		-- draw intro fade-in
   		color(0)
   		rectfill(0, -1, 128, 128 - min(st*600, 129))
 		end
-		
-		-- print scene time lol
-		color(1)
-		rectfill(99, 0, 128, 6)
-		color(14)
-		print(st, 100, 1)
+
+		if show_debug then
+  		-- print scene time lol
+  		color(1)
+  		rectfill(99, 0, 128, 6)
+  		color(14)
+  		print(st, 100, 1)
+
+  		color(7)
+  		print("t_cpu: " .. stat(1), 1, 1)
+  		print("s_cpu: " .. stat(2), 1, 1+7)
+  		print("  fps: " .. stat(7) .. "/" .. stat(8), 1, 1+7+7)
+  end
 
 		-- centre line
 		--rectfill(63, 0, 64, 128)
