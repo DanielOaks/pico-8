@@ -496,14 +496,17 @@ function _draw()
   		color(0)
   		rectfill(0, -1, 128, 128 - min(st*600, 129))
   elseif scene == "effect-plasma" then
-  		color(1)
+  		local sinst = sin(st)
+
+  		-- draw black bg
+  		color(0)
   		rectfill(0, 0, 127, 127)
 
+				-- draw plasma
   		local result = 0
   		local colcount = #plasma_colours
-  		local sinst = sin(st)
   		--fillp(0x8aa2)
-  		fillp(0xa5a5)
+  		fillp(0xa5a5+0b0.1)
   		for x = 0, 127, 6 do
   				for y = 0, 127, 6 do
   						--result += sin((y * 0.01) + st * 0.1)
@@ -527,6 +530,15 @@ function _draw()
   				end
   		end
   		fillp()
+
+  		
+  		-- draw rainbow
+  		for x = 1, 127 do
+  				local y = sin(x*0.01+st*4)*((sinst*2*0.5+0.5)*4.9)+((sin(st*0.46)*30.9))*(sin(x*0.004)*50/120)+50
+  				for i = 1, #rb_rainbow_pattern, 1 do
+    				pset(x, y+(i-1), rb_rainbow_pattern[i])
+    		end
+  		end
 		end
 
 		if show_debug then
