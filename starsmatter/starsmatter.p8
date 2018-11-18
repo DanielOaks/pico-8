@@ -14,6 +14,7 @@ scene_list = {
 		"intro-black",
 		"intro-popin",
 		"intro-popin-fadeout",
+		"effect-bars",
 }
 -- here, we input times in a relative way,
 -- but _init turns them into absolutes.
@@ -27,6 +28,7 @@ scene_end_rtime["intro-starsmatter"] = 3.2
 scene_end_rtime["intro-black"] = 1
 scene_end_rtime["intro-popin"] = 15.6
 scene_end_rtime["intro-popin-fadeout"] = 1
+scene_end_rtime["effect-bars"] = 5
 
 
 -- effect vars
@@ -228,7 +230,9 @@ function _draw()
 				
 				-- draw charge-up
 				if 15 < st then
-						-- do nothing
+						spr(218, 53, 97, 2, 1)
+						spr(218, 55, 97, 2, 1)
+						spr(218, 54, 97, 2, 1)
 				elseif 11.5 < st then
 						local base_sprite = charging_sprites[flr(sin(st*1.7)*1.4+2.4)]
 						spr(base_sprite, 50, 94, 3, 2)
@@ -287,13 +291,39 @@ function _draw()
 		elseif scene == "intro-popin-fadeout" then
   		color(0)
   		rectfill(0, 128, 128, 128 - min(st*600, 128))
+  elseif scene == "effect-bars" then
+  		-- draw bg
+  		color(1)
+  		rectfill(0, 0, 128, 128)
+  		
+  		-- draw rasterbars
+  		local pattern_width = 24
+  		local rb_height = 10
+  		
+  		for i = 1, #rb_rainbow_pattern, 1 do
+    		local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
+    		if flr(((st-(rb_phase*i)) + 0.5) % 2) == 1 then
+      		color(rb_rainbow_pattern[i])
+      		--rectfill(x1+rb_width_mod, 0, x1+rb_width+rb_width_mod, 128)
+      		rectfill(x1+rb_width_mod, 68+cos((st / 2)+0.25-(rb_phase*i))*rb_height, x1+rb_width+rb_width_mod, 128)
+      end
+  		end
+  
+  		for i = #rb_rainbow_pattern, 1, -1 do
+    		local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
+    		if flr(((st-(rb_phase*i)) + 0.5) % 2) == 0 then
+      		color(rb_rainbow_pattern[i])
+      		--rectfill(x1+rb_width_mod, 0, x1+rb_width+rb_width_mod, 128)
+      		rectfill(x1+rb_width_mod, 68+cos((st / 2)+0.25-(rb_phase*i))*rb_height, x1+rb_width+rb_width_mod, 128)
+      end
+  		end
 		end
 		
 		-- print scene time lol
 		color(1)
-		rectfill(99, 0, 128, 6)
+		--rectfill(99, 0, 128, 6)
 		color(14)
-		print(st, 100, 1)
+		--print(st, 100, 1)
 
 		-- centre line
 		--rectfill(63, 0, 64, 128)
