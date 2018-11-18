@@ -18,7 +18,12 @@ scene_list = {
 		"intro-popin",
 		"intro-popin-fadeout",
 		"effect-bars",
+		-- add fade:
+		--  make it fade out bottom-to-top,
+		--  then fade back in left-to-right,
+		--  so fades are an indicator of direction
 		"effect-plasma",
+		--plasma *of the rainbow's colours*? :ooo
 }
 -- here, we input times in a relative way,
 -- but _init turns them into absolutes.
