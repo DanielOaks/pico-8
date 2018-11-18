@@ -9,14 +9,12 @@ scene_start_time = 0
 base_time = 0
 
 scene_list = {
-		"effect-bars",
-
 		"intro-pixienop",
 		"intro-starsmatter",
 		"intro-black",
 		"intro-popin",
 		"intro-popin-fadeout",
-		--"effect-bars",
+		"effect-bars",
 }
 -- here, we input times in a relative way,
 -- but _init turns them into absolutes.
@@ -314,6 +312,10 @@ function _draw()
   		local pattern_vase_width = 10
   		local pattern_vase_phase = sin(st*0.1)*0.005
   		pattern_vase_phase *= min(1, max(0, st*0.25 - 3))
+
+				-- really messes up the vase pattern after a while~
+  		local extra_phase = min(6, max(1, st*0.45 - 10))
+  		pattern_vase_phase *= extra_phase
   		
   		for i = 1, #rb_rainbow_pattern, 1 do
     		--local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
