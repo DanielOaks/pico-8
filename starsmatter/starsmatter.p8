@@ -8,15 +8,12 @@ scene_just_entered = true
 scene_start_time = 0
 base_time = 0
 
-charging_sprites = {
-		204, 233, 236
-}
-
 scene_list = {
 		"intro-pixienop",
 		"intro-starsmatter",
 		"intro-black",
 		"intro-popin",
+		"intro-popin-fadeout",
 }
 -- here, we input times in a relative way,
 -- but _init turns them into absolutes.
@@ -26,10 +23,27 @@ scene_list = {
 scene_end_time = {}
 scene_end_rtime = {}
 scene_end_rtime["intro-pixienop"] = 3
-scene_end_rtime["intro-starsmatter"] = 3
-scene_end_rtime["intro-black"] = 1.25
-scene_end_rtime["intro-popin"] = 20
+scene_end_rtime["intro-starsmatter"] = 3.2
+scene_end_rtime["intro-black"] = 1
+scene_end_rtime["intro-popin"] = 15.6
+scene_end_rtime["intro-popin-fadeout"] = 1
 
+
+-- effect vars
+charging_sprites = {
+		204, 233, 236
+}
+
+rb_width = 3
+rb_width_mod = rb_width / -2 -- helps centre things
+rb_phase = 0.03
+rb_rainbow_pattern = {
+		8,9,10,11,3,12,2,14,
+		--8,9,10,3,1,2,14,
+}
+
+
+-- working vars
 tprint_current_i = {} -- default is 0 so it prints on first char
 
 -- demotime returns the current time,
@@ -181,6 +195,11 @@ function _draw()
 				rectfill(128 - min(st*100, 128), 68, 128, 68)
 				
 				tprint("star-smatter", scene_start_time, demotime(), 0.05, nil, 41, 62)
+				if 1.3 < st then
+						--tprint("a smol pico-8 demo", scene_start_time+1.3, demotime(), 0.05, nil, 29, 71)
+						-- use smol font mentioned on the bbs (thx keiya!)
+						tprint("\65 \83\77\79\76 \80\73\67\79-8 \68\69\77\79", scene_start_time+1.3, demotime(), 0.05, nil, 29, 71)
+				end
 		elseif scene == "intro-black" then
   		color(0)
   		rectfill(0, 128, 128, 128 - min(st*100, 128))
@@ -188,18 +207,38 @@ function _draw()
 				-- dodgy sky -- to make betr latr
   		color(1)
   		rectfill(0, 128, 128, 128 - min(st*100, 128))
+  		
+  		-- draw stars
+				
+				-- draw clouds
+				--todo: break cloud apart on lazer shootin'
+				
+				-- draw lazer
+				if 15 < st then
+						for i = 1, #rb_rainbow_pattern, 1 do
+								color(rb_rainbow_pattern[i])
+								local x1 = 58 + ((i-1)*1)
+								local laz_height = 0
+								if 15 < st and st < 15.4 then
+										laz_height = max(0, 105-230*(0.5+cos((st-15)*0.7)*-0.5)+cos(i/(#rb_rainbow_pattern+1))*4)
+								end
+								rectfill(x1, laz_height, x1, 128)
+						end
+  		end
 				
 				-- draw charge-up
-				if 11.5 < st then
+				if 15 < st then
+						-- do nothing
+				elseif 11.5 < st then
 						local base_sprite = charging_sprites[flr(sin(st*1.7)*1.4+2.4)]
-						spr(base_sprite, 50, 95, 3, 2)
+						spr(base_sprite, 50, 94, 3, 2)
 				elseif 11.3 < st then
 						spr(218, 54, 95, 2, 1)
 				elseif 11 < st then
 						spr(217, 58, 95)
 				end
 				
-				-- draw the lazar
+				-- draw the lazar shooter
 				pal(1, 6)
 				pal(4, 5)
 				pal(2, 0)
@@ -225,7 +264,13 @@ function _draw()
   		pal()
   		
 				color(7)
-				if 8.75 < st then
+				if 14.7 < st then
+						-- do nothing
+				elseif 14.5 < st then
+						color(5)
+						print("project star-smatter.", 20, 62)
+						print("our last hope.", 20, 68)
+				elseif 8.75 < st then
 						print("project star-smatter.", 20, 62)
 						tprint("our last hope.", scene_start_time+8.75, demotime(), 0.1, nil, 20, 68)
 				elseif 6.75 < st then
@@ -239,7 +284,16 @@ function _draw()
   		elseif 2.5 < st then
 						tprint("we all knew that this", scene_start_time+2.5, demotime(), 0.05, nil, 20, 62)
   		end
+		elseif scene == "intro-popin-fadeout" then
+  		color(0)
+  		rectfill(0, 128, 128, 128 - min(st*600, 128))
 		end
+		
+		-- print scene time lol
+		color(1)
+		rectfill(99, 0, 128, 6)
+		color(14)
+		print(st, 100, 1)
 
 		-- centre line
 		--rectfill(63, 0, 64, 128)
@@ -375,8 +429,8 @@ __gfx__
 00000000000411400000000000000000044540000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000441400000000000000000045540044440444400000000000044400000000001111100000000001111111111111111000000000011111000000000
 4444000000004140004440000000000004454004114441144000000000444d400000000001444410000000000144444444444410000000000144441000000000
-4554400444444144404d440000000004445544044141111140000000444ddd440000000011111111444444441111111111111111444444441111111100000000
-4555444411111111444dd444400044445555544411111111444440044dddddd40000000014222222111111111111111111111111111111112222224100000000
+4554400444444144404d440000000004445544044141111140000000444ddd440000000011111111000000001111111111111111000000001111111100000000
+4555444411111111444dd444400044445555544411111111444440044dddddd40000000014222222111111111144442144444411111111112222224100000000
 5555555516611661dddddddd44004544566554541111666111414404ddd6dddd0000000012444244444442444444421444444244444442144444422100000000
 5666556511111111dddd6ddd54444545555555551611111111115444d6dd6d6d0000000014442444444424444444214444442444444421444444211100000000
 5555565511116161d6d6dd6d55555555555665551111116111615555dddddd6d000000001442444344424446444214444442444c444214444442144100000000
