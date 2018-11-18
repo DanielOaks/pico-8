@@ -18,6 +18,7 @@ scene_list = {
 		"intro-popin",
 		"intro-popin-fadeout",
 		"effect-bars",
+		"effect-plasma",
 }
 -- here, we input times in a relative way,
 -- but _init turns them into absolutes.
@@ -32,7 +33,8 @@ scene_end_rtime["intro-starsmatter"] = 3.2
 scene_end_rtime["intro-black"] = 1
 scene_end_rtime["intro-popin"] = 15.6
 scene_end_rtime["intro-popin-fadeout"] = 1
-scene_end_rtime["effect-bars"] = 50
+scene_end_rtime["effect-bars"] = 37
+scene_end_rtime["effect-plasma"] = 20
 
 
 -- effect vars
@@ -45,6 +47,11 @@ star_colours = {
 
 charging_sprites = {
 		204, 233, 236
+}
+
+plasma_colours = {
+		--1, 2, 8, 14, 4, 3, 1
+		2, 1, 1, 1, 2, 1, 3, 3
 }
 
 rb_width = 3
@@ -360,7 +367,7 @@ function _draw()
   elseif scene == "effect-bars" then
   		-- draw bg
   		color(1)
-  		rectfill(0, 0, 128, 128)
+  		rectfill(0, 0, 127, 127)
 
   		-- draw stars
   		if scene_just_entered then
@@ -488,6 +495,38 @@ function _draw()
   		-- draw intro fade-in
   		color(0)
   		rectfill(0, -1, 128, 128 - min(st*600, 129))
+  elseif scene == "effect-plasma" then
+  		color(1)
+  		rectfill(0, 0, 127, 127)
+
+  		local result = 0
+  		local colcount = #plasma_colours
+  		local sinst = sin(st)
+  		--fillp(0x8aa2)
+  		fillp(0xa5a5)
+  		for x = 0, 127, 6 do
+  				for y = 0, 127, 6 do
+  						--result += sin((y * 0.01) + st * 0.1)
+  						--result += sin((sin(x*0.004) + cos(y*0.004)) * st * 0.25)
+  						--result += sin((x/127) + (y/256) + st*0.1)
+  						--cx = x + 0.5 * sin(st*78)
+  						--cy = y + 0.5 * sin(st*4)
+  						--result += sin(sqrt(10 * ((cx ^ 2) + (cy ^ 2)) + st * 50.3)*0.005)
+  						--if x % 6 == 0 and y % 6 == 0 then
+  								result = sin(st+(x+(y*sin((x*0.005)*st*0.7)*0.7))*0.02)
+  								result += sin((x * 0.01) + sinst * 0.1)
+  								result += cos((x-30*sinst*0.15)*y*sinst*0.00002)
+  								result /= 3
+  								result = (result*0.5+0.5)*colcount+1
+  								result = min(colcount, max(1, flr(result)))
+  						
+  								--pset(x, y, )
+  								color(plasma_colours[result])
+  								rectfill(x, y, x+5, y+5)
+  						--end
+  				end
+  		end
+  		fillp()
 		end
 
 		if show_debug then
