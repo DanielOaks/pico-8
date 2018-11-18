@@ -307,32 +307,35 @@ function _draw()
   		-- draw rasterbars
   		local pattern_width = 24
   		local pattern_width_mod = 10
-  		local pattern_height = 62 - max(0, 100-st*55)
+  		local pattern_height = 42 - max(0, 100-st*55)
   		local pattern_height_mod = 10
   		local pattern_height_perspective = 10
   		local rb_swirl_phase = 0 -- doesn't work right, lol
+  		local pattern_vase_width = 10
+  		local pattern_vase_phase = sin(st*0.1)*0.005
+  		pattern_vase_phase *= min(1, max(0, st*0.25 - 3))
   		
   		for i = 1, #rb_rainbow_pattern, 1 do
-    		local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
+    		--local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
     		local y1 = pattern_height+cos((st / 2)+0.25-(rb_phase*i))*pattern_height_perspective+sin((st*0.5)+(i*rb_current_sync))*pattern_height_mod
     		if flr(((st-(rb_phase*i)) + 0.5) % 2) == 1 then
       		color(rb_rainbow_pattern[i])
       		--rectfill(x1+rb_width_mod, y1, x1+rb_width+rb_width_mod, 128)
       		for y2 = 128, y1, -1 do
-      				local x2 = 128/2 + flr(cos((st / 2)-(rb_phase*i)+sin(y2*rb_swirl_phase))*pattern_width)
+      				local x2 = 128/2 + flr(cos((st / 2)-(rb_phase*i)+sin(y2*rb_swirl_phase))*pattern_width+((sin(cos((st / 2)-(rb_phase*i))*y2*pattern_vase_phase))*pattern_vase_width))
       				rectfill(x2+rb_width_mod, y2, x2+rb_width+rb_width_mod, y2)
       		end
       end
   		end
   
   		for i = #rb_rainbow_pattern, 1, -1 do
-    		local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
+    		--local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
     		local y1 = pattern_height+cos((st / 2)+0.25-(rb_phase*i))*pattern_height_perspective+sin((st*0.5)+(i*rb_current_sync))*pattern_height_mod
     		if flr(((st-(rb_phase*i)) + 0.5) % 2) == 0 then
       		color(rb_rainbow_pattern[i])
       		--rectfill(x1+rb_width_mod, y1, x1+rb_width+rb_width_mod, 128)
       		for y2 = 128, y1, -1 do
-      				local x2 = 128/2 + flr(cos((st / 2)-(rb_phase*i)+sin(y2*rb_swirl_phase))*pattern_width)
+      				local x2 = 128/2 + flr(cos((st / 2)-(rb_phase*i)+sin(y2*rb_swirl_phase))*pattern_width+((sin(cos((st / 2)-(rb_phase*i))*y2*pattern_vase_phase))*pattern_vase_width))
       				rectfill(x2+rb_width_mod, y2, x2+rb_width+rb_width_mod, y2)
       		end
       end
