@@ -9,6 +9,8 @@ scene_start_time = 0
 base_time = 0
 
 scene_list = {
+		--"cls",
+		
 		"intro-pixienop",
 		"intro-starsmatter",
 		"intro-black",
@@ -23,7 +25,8 @@ scene_list = {
 -- prevent floating point scene/music desyncs?
 scene_end_time = {}
 scene_end_rtime = {}
-scene_end_rtime["intro-pixienop"] = 3
+scene_end_rtime["cls"] = 0.1
+scene_end_rtime["intro-pixienop"] = 3.15
 scene_end_rtime["intro-starsmatter"] = 3.2
 scene_end_rtime["intro-black"] = 1
 scene_end_rtime["intro-popin"] = 15.6
@@ -32,6 +35,13 @@ scene_end_rtime["effect-bars"] = 50
 
 
 -- effect vars
+stars = {}
+
+star_colours = {
+		7, 7, 6, 6, 5,
+		9, 10, 14, 13, 15,
+}
+
 charging_sprites = {
 		204, 233, 236
 }
@@ -109,7 +119,10 @@ function _draw()
 		local st = scenetime()
 
 		-- draw scene details
-		if scene == "intro-pixienop" then
+		if scene == "cls" then
+				-- normally just for testing
+				cls()
+		elseif scene == "intro-pixienop" then
 				if scene_just_entered then
 						music(-1)
 						sfx(1)
@@ -158,7 +171,7 @@ function _draw()
 				end
 				spr(176, 25, 39, 9, 5)
 
-				if st < 0.5 or 1.9 < st then
+				if st < 0.5 or 2.3 < st then
 						pal()
 						color(1)
 						local stf = st
@@ -170,9 +183,9 @@ function _draw()
   								fp += 0b1
   								stf -= 0.02
   						end
-  				elseif 1.9 < st then
+  				elseif 2.15 < st then
   						fp = 0b1111111111111111
-  						while 1.9 < stf do
+  						while 2.15 < stf do
   								fp = shl(fp, 1)
   								stf -= 0.035
   						end
@@ -212,11 +225,53 @@ function _draw()
   		color(0)
   		rectfill(0, 128, 128, 128 - min(st*100, 128))
 		elseif scene == "intro-popin" then
+				local scroll_in = 128 - min(st*100, 128)
+		
 				-- dodgy sky -- to make betr latr
   		color(1)
   		rectfill(0, 128, 128, 128 - min(st*100, 128))
   		
   		-- draw stars
+  		if scene_just_entered then
+  				for i = 1, 80 do
+  						local star = {}
+  						star.x = flr(rnd() * 128)
+  						star.y = flr(rnd() * 128)
+  						star.life = flr(rnd() * 120)
+  						star.colour = flr(rnd() * (#star_colours - 1)) + 1
+  						star.big = 0.95 < rnd()
+  						if (4 < star.y and star.y < 56) or (73 < star.y and star.y < 100) then
+				  				add(stars, star)
+				  		end
+  				end
+  		end
+  		
+  		for i = 1, #stars, 1 do
+  				local star = stars[i]
+  				
+  				-- do here instead of update just because
+  				-- putting it in update will affect all frames
+  				-- and meh
+  				star.life -= 1
+  				if star.life < -30 then
+  						star.life = flr(rnd() * 120)
+  				end
+  				stars[i].life = star.life
+  
+  				if 0 < star.life then
+  						pal(7, star_colours[star.colour])
+  						local star_sprite = 201
+  						if star.big then
+  								if 90 < star.life then
+  										star_sprite = 203
+  								elseif 35 < star.life then
+  										star_sprite = 202
+  								end
+		    		end
+		    		spr(star_sprite, star.x, star.y + scroll_in)
+    		end
+  		end
+  		pal()
 				
 				-- draw clouds
 				--todo: break cloud apart on lazer shootin'
@@ -261,7 +316,7 @@ function _draw()
 				if 6.5 < st and st < 10.2 then
 						mountain_shake = max(min(1, sin(st*0.65)*2.5), -1)
 				end
-				spr(96, 0 + mountain_shake, 104 + 128 - min(st*100, 128), 16, 3)
+				spr(96, 0 + mountain_shake, 104 + scroll_in, 16, 3)
 
 				-- draw buildings
 				pal(4, 0)
@@ -269,8 +324,8 @@ function _draw()
 				if 6.6 < st and st < 10.3 then
 						building_shake = max(min(1, cos(st*0.9)*1.6), -1)
 				end
-  		spr(144, 0+building_shake, 112 + 128 - min(st*100, 128), 8, 2)
-  		spr(144, 64+building_shake, 112 + 128 - min(st*100, 128), 8, 2)
+  		spr(144, 0+building_shake, 112 + scroll_in, 8, 2)
+  		spr(144, 64+building_shake, 112 + scroll_in, 8, 2)
   		pal()
   		
 				color(7)
@@ -301,6 +356,64 @@ function _draw()
   		-- draw bg
   		color(1)
   		rectfill(0, 0, 128, 128)
+
+  		-- draw stars
+  		if scene_just_entered then
+  				stars = {}
+  				for i = 1, 60 do
+  						local star = {}
+  						star.x = flr(rnd() * 128)
+  						star.y = flr(rnd() * 128)
+  						star.z = 0.85 < rnd()
+  						star.life = flr(rnd() * 120)
+  						star.colour = flr(rnd() * (#star_colours - 1)) + 1
+  						star.big = 0.95 < rnd()
+  						add(stars, star)
+  				end
+  		end
+  		
+  		for i = 1, #stars, 1 do
+  				local star = stars[i]
+  				
+  				-- do here instead of update just because
+  				-- putting it in update will affect all frames
+  				-- and meh
+  				star.life -= 1
+  				if star.life < -30 then
+  						star.life = flr(rnd() * 120)
+  				end
+  				stars[i].life = star.life
+  				
+  				star.y += 20 * rnd()
+  				if 131 < star.y then
+  						star.y = 0 - 3
+  						star.x = rnd() * 128
+		  				stars[i].x = star.x
+  						star.z = 0.85 < rnd()
+		  				stars[i].z = star.z
+  						star.colour = flr(rnd() * (#star_colours - 1)) + 1
+		  				stars[i].colour = star.colour
+  						star.big = 0.95 < rnd()
+		  				stars[i].big = star.big
+  				end
+  				stars[i].y = star.y
+  
+  				if not star.z then
+    				if 0 < star.life then
+    						pal(7, star_colours[star.colour])
+    						local star_sprite = 201
+    						if star.big then
+    								if 90 < star.life then
+    										star_sprite = 203
+    								elseif 35 < star.life then
+    										star_sprite = 202
+    								end
+  		    		end
+  		    		spr(star_sprite, star.x, star.y)
+      		end
+      end
+  		end
+  		pal()
   		
   		-- draw rasterbars
   		local pattern_width = 24
@@ -314,8 +427,11 @@ function _draw()
   		pattern_vase_phase *= min(1, max(0, st*0.25 - 3))
 
 				-- really messes up the vase pattern after a while~
-  		local extra_phase = min(6, max(1, st*0.45 - 10))
-  		pattern_vase_phase *= extra_phase
+  		local extra_phase = min(20, max(1, st*0.45 - 10))
+  		extra_phase *= min(1, max(0, 20 - st*0.45))
+  		if extra_phase < 1 then
+		  		pattern_vase_phase *= extra_phase
+		  end
   		
   		for i = 1, #rb_rainbow_pattern, 1 do
     		--local x1 = 128/2 + flr(cos((st / 2)-(rb_phase*i))*pattern_width)
@@ -342,6 +458,26 @@ function _draw()
       		end
       end
   		end
+  		
+  		-- draw top stars
+  		for i = 1, #stars, 1 do
+  				if stars[i].z then
+		  				local star = stars[i]
+		  				
+    				if 0 < star.life then
+    						pal(7, star_colours[star.colour])
+    						local star_sprite = 201
+    						if star.big then
+    								if 90 < star.life then
+    										star_sprite = 203
+    								elseif 35 < star.life then
+    										star_sprite = 202
+    								end
+  		    		end
+  		    		spr(star_sprite, star.x, star.y)
+      		end
+		  		end
+		  end
   		
   		-- draw intro fade-in
   		color(0)
@@ -506,9 +642,9 @@ __gfx__
 00000000000000000000000000000000000000000a0000000000a000000000000000000011444444244444442444444424444444244444424444442100000000
 00000000000aaaaaa000000000000000000000000a0000000000a000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000aa000000a00000000000000000000000aa000000000a000000000000000000000000000000000000007000000000000000000000000000000000000
-00000000a00000000a000000000000000000000000a000000000a000000000000000000000000000007000000067600000000000000000000000000000000000
-0000000a000000000a000000000000000000000000aa0000000aa000000000000000000000070000076700000777770000000000007000000000000000000000
-000000a0000000000a000008808800000000000000aa0000000a0000000000000000000000000000007000000067600000000070000000000070000000000000
+00000000a00000000a000000000000000000000000a000000000a000000000000000000000000000000700000007000000000000000000000000000000000000
+0000000a000000000a000000000000000000000000aa0000000aa000000000000000000000070000007070000770770000000000007000000000000000000000
+000000a0000000000a000008808800000000000000aa0000000a0000000000000000000000000000000700000007000000000070000000000070000000000000
 00000a00000000000a000080080080000000000000a0a000000a0000000000000000000000000000000000000007000000000000000700007000007000000000
 0000a000000000000a000080000080000000000000a0a000000a0000000000000000000000000000000000000000000000077777777777777777700000000000
 0000a000000000000a000080000080000000000000a00a00000a00000000000000000000000000000000000000000000007777aaaaaaaaaaaa77770000000000
@@ -538,7 +674,7 @@ __gfx__
 00000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-011000002d565295552b5452856529555265452453528535245252852524515285122850100001000001865418641186311862118615000000000000000000000000000000000000000000000000000000000000
+011000002d565295552b5452856529555265452453528535245252852524515285122850100001000000000000000186541864118631186211861500000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
