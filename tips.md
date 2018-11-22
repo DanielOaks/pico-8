@@ -1,5 +1,7 @@
 # Pico-8 Tips and Tricks
 
+Randomly collected from across the BBS and all, just a working doc for me when actively doing stuff.
+
 
 ## Music
 
