@@ -10,6 +10,11 @@ tun_step_speed = 0.1
 tun_z_frames = 16
 tun_angles_around = 30
 
+-- because of how we canculate
+-- the z, frames and step speed
+-- factor into the step phase,
+-- so must multiply into the
+-- original one above \o/
 tun_2_smallest_radius_count = 1.2
 tun_2_step_speed = 0.05
 tun_2_z_frames = 32
