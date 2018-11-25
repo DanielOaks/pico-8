@@ -68,6 +68,21 @@ rb_rainbow_pattern = {
 		--8,9,10,3,1,2,14,
 }
 
+stxt_start_time = 99999
+stxt_start_delay = 23
+stxt_text = "star-smatter, my first demo! hope you like it! greetz to rez+dubmood, rzr1911, 4mat, flt, conspiracy, y'all are awesome and got me into this!    now back to the effects!"
+stxt_start_x = 128 -- will depend on trig used
+stxt_char_width = 4
+stxt_x = 0
+stxt_y = 110
+stxt_speed = 2
+stxt_amplitude = 2
+stxt_phase = 0.06
+stxt_colors = {
+		--8, 14, 12, 3,
+		--8,9,10,11,3,12,13,2,14,
+		8,9,10,3,12,2,14,
+}
 
 -- working vars
 tprint_current_i = {} -- default is 0 so it prints on first char
@@ -124,6 +139,8 @@ function _update()
 		if 1 < rb_current_sync then
 				rb_current_sync -= 1
 		end
+		
+		stxt_x -= stxt_speed
 end
 
 function _draw()
@@ -134,6 +151,7 @@ function _draw()
 				scene_start_time = demotime()
 		end
 		local st = scenetime()
+		local dt = demotime()
 
 		-- draw scene details
 		if scene == "cls" then
@@ -370,6 +388,11 @@ function _draw()
   		color(0)
   		rectfill(0, 128, 128, 128 - min(st*600, 128))
   elseif scene == "effect-bars" then
+  		if scene_just_entered then
+  				stxt_start_time = demotime() + stxt_start_delay
+  				stxt_first_frame_this_add = true
+  		end
+  
   		-- draw bg
   		color(1)
   		rectfill(0, 0, 127, 127)
@@ -496,6 +519,53 @@ function _draw()
 		  		end
 		  end
 		  pal()
+		  
+		  -- draw scroller
+		  if stxt_start_time < dt then
+		  		if stxt_first_frame_this_add then
+		  				stxt_x = stxt_start_x
+		  				stxt_first_frame_this_add = false
+		  		end
+		  
+		  		-- restart text scrolling
+    		local x_add = 0
+    		--while stxt_x + stxt_char_width * (#stxt_text + 1) + x_add < 0 do
+    		--		x_add += stxt_start_x + stxt_char_width * (#stxt_text + 1)
+    		--end
+		  
+    		local c = 1 -- colour
+    		local char = ""
+    		local x = 0
+    		local y = 0
+    		local scrolltime = dt - stxt_start_time
+    		for i = 1, #stxt_text, 1 do
+    				char = sub(stxt_text, i, i)
+    				x = (stxt_x + stxt_char_width*i) + x_add
+    				y = stxt_y + sin(scrolltime + i * stxt_phase) * stxt_amplitude
+    				
+    				-- draw outline
+    				color(0)
+    				for xmod = -1, 1, 1 do
+		    				for ymod = -1, 1, 1 do
+				    				print(char, x+xmod, y+ymod)
+				    		end
+				    end
+   
+   					-- draw char
+    				color(stxt_colors[c])
+    				print(char, x, y)
+    				
+    				-- advance colours
+    				if char != " " then
+      				c += 1
+      				if #stxt_colors < c then
+      						c = 1
+      				end
+      		end
+    		end
+
+
+		  end
   		
   		-- draw intro fade-in
   		color(0)
