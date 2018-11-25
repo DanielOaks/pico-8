@@ -70,7 +70,7 @@ rb_rainbow_pattern = {
 
 stxt_start_time = 99999
 stxt_start_delay = 23
-stxt_text = "star-smatter, my first demo! hope you like it! greetz to rez+dubmood, rzr1911, 4mat, flt, conspiracy, y'all are awesome and got me into this!    now back to the effects!"
+stxt_text = "star-smatter, my first demo!  hope you like it!  greetz to rez, razor1911, 4mat, flt, conspiracy, y'all are awesome and got me into this!  now back to the effects!"
 stxt_start_x = 128 -- will depend on trig used
 stxt_char_width = 4
 stxt_x = 0
