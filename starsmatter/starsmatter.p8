@@ -24,6 +24,7 @@ scene_list = {
 		--  so fades are an indicator of direction
 		"effect-plasma",
 		--plasma *of the rainbow's colours*? :ooo
+		"effect-tunnel",
 }
 -- here, we input times in a relative way,
 -- but _init turns them into absolutes.
@@ -36,10 +37,11 @@ scene_end_rtime["cls"] = 0.1
 scene_end_rtime["intro-pixienop"] = 3.15
 scene_end_rtime["intro-starsmatter"] = 3.2
 scene_end_rtime["intro-black"] = 1
-scene_end_rtime["intro-popin"] = 15.6
+scene_end_rtime["intro-popin"] = 15.5
 scene_end_rtime["intro-popin-fadeout"] = 1
-scene_end_rtime["effect-bars"] = 37
-scene_end_rtime["effect-plasma"] = 20
+scene_end_rtime["effect-bars"] = 36.5
+scene_end_rtime["effect-plasma"] = 13.35
+scene_end_rtime["effect-tunnel"] = 20
 
 
 -- effect vars
@@ -54,6 +56,7 @@ charging_sprites = {
 		204, 233, 236
 }
 
+plasma_rb_delay = 3
 plasma_colours = {
 		--1, 2, 8, 14, 4, 3, 1
 		2, 1, 1, 1, 2, 1, 3, 3
@@ -83,6 +86,29 @@ stxt_colors = {
 		--8,9,10,11,3,12,13,2,14,
 		8,9,10,3,12,2,14,
 }
+
+tun_speed = 0.3
+tun_radius = 70
+tun_smallest_radius_count = 1.2
+tun_step_phase = 0.25
+tun_step_speed = 0.1
+tun_z_frames = 16
+tun_angles_around = 30
+
+-- because of how we canculate
+-- the z, frames and step speed
+-- factor into the step phase,
+-- so must multiply into the
+-- original one above \o/
+tun_2_smallest_radius_count = 1.2
+tun_2_step_speed = 0.05
+tun_2_z_frames = 32
+tun_2_colors = {
+		8,9,10,11,3,12,2,14,
+}
+tun_2_angles_around = #tun_2_colors
+tun_2_angle_mod = 0
+tun_2_angle_mod_phase = 0.005
 
 -- working vars
 tprint_current_i = {} -- default is 0 so it prints on first char
@@ -138,6 +164,11 @@ function _update()
 		rb_current_sync += 0.0015
 		if 1 < rb_current_sync then
 				rb_current_sync -= 1
+		end
+
+		tun_2_angle_mod += tun_2_angle_mod_phase
+		if 1 < tun_2_angle_mod then
+				tun_2_angle_mod -= 1
 		end
 		
 		stxt_x -= stxt_speed
@@ -312,20 +343,20 @@ function _draw()
 				--todo: break cloud apart on lazer shootin'
 				
 				-- draw lazer
-				if 15 < st then
+				if 14.7 < st then
 						for i = 1, #rb_rainbow_pattern, 1 do
 								color(rb_rainbow_pattern[i])
 								local x1 = 58 + ((i-1)*1)
 								local laz_height = 0
-								if 15 < st and st < 15.4 then
-										laz_height = max(0, 105-230*(0.5+cos((st-15)*0.7)*-0.5)+cos(i/(#rb_rainbow_pattern+1))*4)
+								if 14.7 < st and st < 15.1 then
+										laz_height = max(0, 105-230*(0.5+cos((st-14.7)*0.7)*-0.5)+cos(i/(#rb_rainbow_pattern+1))*4)
 								end
 								rectfill(x1, laz_height, x1, 128)
 						end
   		end
 				
 				-- draw charge-up
-				if 15 < st then
+				if 14.65 < st then
 						spr(218, 53, 97, 2, 1)
 						spr(218, 55, 97, 2, 1)
 						spr(218, 54, 97, 2, 1)
@@ -570,6 +601,9 @@ function _draw()
   		-- draw intro fade-in
   		color(0)
   		rectfill(0, -1, 128, 128 - min(st*600, 129))
+  		
+  		-- draw outro fade-out
+  		rectfill(0, -1, 128, 128 - min((36 - st)*600, 129))
   elseif scene == "effect-plasma" then
   		local sinst = sin(st)
 
@@ -582,8 +616,8 @@ function _draw()
   		local colcount = #plasma_colours
   		--fillp(0x8aa2)
   		fillp(0xa5a5+0b0.1)
-  		for x = 0, 127, 6 do
-  				for y = 0, 127, 6 do
+  		for x = 0, 127, 5 do
+  				for y = 0, 127, 5 do
   						--result += sin((y * 0.01) + st * 0.1)
   						--result += sin((sin(x*0.004) + cos(y*0.004)) * st * 0.25)
   						--result += sin((x/127) + (y/256) + st*0.1)
@@ -600,7 +634,7 @@ function _draw()
   						
   								--pset(x, y, )
   								color(plasma_colours[result])
-  								rectfill(x, y, x+5, y+5)
+  								rectfill(x, y, x+4, y+4)
   						--end
   				end
   		end
@@ -608,12 +642,97 @@ function _draw()
 
   		
   		-- draw rainbow
-  		for x = 1, 127 do
-  				local y = sin(x*0.01+st*4)*((sinst*2*0.5+0.5)*4.9)+((sin(st*0.46)*30.9))*(sin(x*0.004)*50/120)+50
-  				for i = 1, #rb_rainbow_pattern, 1 do
-    				pset(x, y+(i-1), rb_rainbow_pattern[i])
+  		local max_x = min(127, max(0, flr((st - plasma_rb_delay) * 350)))
+  		if 0 < max_x then
+    		for x = 0, max_x do
+    				local y = sin(x*0.01+st*4)*((sinst*2*0.5+0.5)*4.9)+((sin(st*0.46)*30.9))*(sin(x*0.004)*50/120)+50
+    				for i = 1, #rb_rainbow_pattern, 1 do
+    						if max_x < 127 then
+      						if (i == 1 or i == #rb_rainbow_pattern) and max_x - 4 < x then
+      						elseif (i == 2 or i == #rb_rainbow_pattern - 1) and max_x - 2 < x then
+      						elseif (i == 3 or i == #rb_rainbow_pattern - 2) and max_x - 1 < x then
+      						else
+        						pset(x, y+(i-1), rb_rainbow_pattern[i])
+        				end
+        		else
+        				pset(x, y+(i-1), rb_rainbow_pattern[i])
+        		end
+      		end
     		end
+    end
+
+  		-- draw intro fade-in
+  		color(0)
+  		rectfill(-1, 0, 128 - min(st*600, 129), 128)
+  		
+  		-- draw outro fade-out
+  		rectfill(-1, 0, 128 - min((12.8 - st)*600, 129), 128)
+  elseif scene == "effect-tunnel" then
+  		-- bg
+  		color(1)
+  		rectfill(0, 0, 127, 127)
+  		
+  	 local tt = st * 0.3
+  		
+  		-- initial tunnel stars
+  		for z = 0, tun_z_frames, 1 do
+  				local zmod = z / tun_z_frames
+  				tt = (st - z * tun_step_speed) * tun_speed
+  		
+    		x = sin(tt) * 15.9 + sin(tt*2.4) * 4 + (128/2)
+    		y = cos(tt) * 10.9 + cos(tt*5.6+3.7) * 3 + (128/2)
+  
+  				local starcolor = 7
+  				if zmod < 0.15 then
+  						starcolor = 0
+  				elseif zmod < 0.33 then
+  						starcolor = 5
+  				elseif zmod < 0.66 then
+  						starcolor = 6
+  				end
+    		color(starcolor)
+  
+    		local radius_mod = (z+tun_smallest_radius_count) / tun_z_frames
+  				local radius = tun_radius * radius_mod
+  
+  				for angle = 1, tun_angles_around, 1 do
+  						angle = (angle / tun_angles_around) + (zmod * tun_step_phase)
+  
+  						local x_around = x + radius * cos(angle)
+  						local y_around = y + radius * sin(angle)
+  						
+  						pset(x_around, y_around)
+  				end
   		end
+  
+  		-- tunnel strips
+  		for z = 0, tun_2_z_frames, 1 do
+  				local zmod = z / tun_2_z_frames
+  				tt = (st - z * tun_2_step_speed) * tun_speed
+  		
+    		x = sin(tt) * 15.9 + sin(tt*2.4) * 4 + (128/2)
+    		y = cos(tt) * 10.9 + cos(tt*5.6+3.7) * 3 + (128/2)
+  
+    		local radius_mod = (z+tun_2_smallest_radius_count) / tun_2_z_frames
+  				local radius = tun_radius * radius_mod
+  
+  				for angle = 1, tun_2_angles_around, 1 do
+  						local colorig = angle
+  						angle = (angle / tun_2_angles_around) + (zmod * tun_step_phase) + tun_2_angle_mod
+  
+  						local x_around = x + radius * cos(angle)
+  						local y_around = y + radius * sin(angle)
+  						
+  						pset(x_around, y_around, tun_2_colors[colorig])
+  				end
+  		end
+
+  		-- draw intro fade-in
+  		color(0)
+  		rectfill(-1, 0, 64 - min(st*400, 65), 128)
+  		rectfill(129, 0, 64 + min(st*400, 65), 128)
+  		rectfill(0, -1, 128, 64 - min(st*400, 65))
+  		rectfill(0, 129, 128, 64 + min(st*400, 65))
 		end
 
 		if show_debug then
