@@ -5,6 +5,12 @@ __lua__
 current_scene = -1
 final_scene = 2
 
+-- if this is 0< then the current
+--  scene will continue through
+--  that number of music pattern
+--  changes, e.g. 2 == skip 2 pats
+continue_scene = 0
+
 -- tracks whether current_scene
 --  has already been updated
 scene_updated_this_pattern = false
@@ -48,13 +54,19 @@ function _update()
 		if stat(20) < 5 then
 				if not scene_updated_this_pattern then
 						scene_updated_this_pattern = true
-						scene_just_entered = true
-						current_scene += 1
-						if final_scene < current_scene then
-								current_scene = 0
-								_demotime_start = time()
-						end
-						_scenetime_start = time()
+						
+						if 0 < continue_scene then
+								continue_scene -= 1
+						else
+  						scene_just_entered = true
+  						current_scene += 1
+  						if final_scene < current_scene then
+  								current_scene = 0
+  								continue_scene = 0 -- prevent overflows
+  								_demotime_start = time()
+  						end
+  						_scenetime_start = time()
+ 					end
 				end
 		else
 				scene_updated_this_pattern = false
@@ -102,6 +114,10 @@ function _draw()
 		
 		sc += 1
 		if current_scene == sc then
+				if scene_just_entered then
+						continue_scene = 1
+				end
+		
 				color(4)
 				rectfill(0, 0, 127, 127)
 				
@@ -132,6 +148,7 @@ function _draw()
 				scene_just_entered = false
 		end
 end
+
 __sfx__
 000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 01100000023532920002350262000535010205073500e205053530200004350050000035007000023500500007353000000735000000053500000004350000000535305300043500000000350000000235000000
