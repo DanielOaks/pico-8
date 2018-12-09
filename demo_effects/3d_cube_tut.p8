@@ -9,7 +9,7 @@ end
 -- effect-specific info
 render_aspect = 1 -- aspect ratio
 
-render_fov = 90
+render_fov = 60
 _render_fov_rad = 1/tan((render_fov * 0.5)/(180*3.141592))
 
 render_znear = 0.1
@@ -179,15 +179,15 @@ function _draw()
 				for j = 1, 3 do
 						t.vecs[j] = vec3d(t_orig.vecs[j].x, t_orig.vecs[j].y, t_orig.vecs[j].z)
 				end
-		
+				
 				--t = multiply_matrix_tri(t, mat_rot_z)
-				--t = multiply_matrix_tri(t, mat_rot_x)
-				t = multiply_matrix_tri(t, mat_rot_y)
+				t = multiply_matrix_tri(t, mat_rot_x)
+				--t = multiply_matrix_tri(t, mat_rot_y)
 				
 				-- away from screen
-				t.vecs[1].z += 3
-				t.vecs[2].z += 3
-				t.vecs[3].z += 3
+				t.vecs[1].z += 5
+				t.vecs[2].z += 5
+				t.vecs[3].z += 5
 				
 				-- transform (project) tri verticies
 				t1 = multiply_matrix(t.vecs[1], mat_proj)
