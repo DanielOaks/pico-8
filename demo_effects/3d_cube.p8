@@ -26,7 +26,7 @@ cube_obj = "v -0.5 -0.5 -0.5;v 0.5 -0.5 -0.5;v 0.5 -0.5 0.5;v -0.5 -0.5 0.5;v -0
 cube = {} -- loaded at runtime
 
 render_aspect = 1 -- aspect ratio
-render_fov = 40
+render_fov = 90
 _render_fov_rad = 1/tan((render_fov * 0.5)/(180*3.141592))
 render_znear = 0.1
 render_zfar = 1000
@@ -66,7 +66,7 @@ function multiply_matrix_tri(t, m)
 		local v2 = multiply_matrix(t.verts[2], m)
 		local v3 = multiply_matrix(t.verts[3], m)
 		
-		return tri(v1, v2, v3, t.verts[4])
+		return tri(v1, v2, v3, 0)
 end
 
 
@@ -130,6 +130,7 @@ function mesh_from_objstring(obj)
 								}
 								faces[#faces+1] = newface
   						if 4 < #parts then
+  								newface = {}
   								newface.verts = {
 												verts[parts[2]+0],
 												verts[parts[4]+0],
@@ -171,7 +172,7 @@ function _draw()
 		-- do your effect here
 		cls()
 
-		local ftheta = scenetime() * 0.4
+		local ftheta = scenetime() * 0.2
 		
 		local mat_rot_x = mat4x4()
 		mat_rot_x[1][1] = 1
@@ -217,12 +218,15 @@ function _draw()
 				--t = multiply_matrix_tri(t, mat_rot_y)
 				
 				-- to world space
-				t.verts[1][3] += 5
-				t.verts[2][3] += 5
-				t.verts[3][3] += 5
+				t.verts[1][3] += 2
+				t.verts[2][3] += 2
+				t.verts[3][3] += 2
 
 				-- to view space
 				t = multiply_matrix_tri(t, mat_proj)
+				t.verts[1][1] /= t.verts[1][4];t.verts[1][2] /= t.verts[1][4];t.verts[1][3] /= t.verts[1][4];
+				t.verts[2][1] /= t.verts[2][4];t.verts[2][2] /= t.verts[2][4];t.verts[2][3] /= t.verts[2][4];
+				t.verts[3][1] /= t.verts[3][4];t.verts[3][2] /= t.verts[3][4];t.verts[3][3] /= t.verts[3][4];
 				
 				-- to screen space
 				t.verts[1][1] += 1; t.verts[1][2] += 1
@@ -236,9 +240,6 @@ function _draw()
 				line(t.verts[2][1], t.verts[2][2], t.verts[3][1], t.verts[3][2])
 				line(t.verts[3][1], t.verts[3][2], t.verts[1][1], t.verts[1][2])
 		end
-		
-		color(2)
-		print(#cube.tris)
 		
 		-- end
 		if show_debug then
