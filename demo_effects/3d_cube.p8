@@ -38,12 +38,12 @@ end
 
 -->8
 -- quaternions
-function quat(w, x, y, z)
+function quat(x, y, z, w)
 		q = {}
-		q.w = w
 		q.x = x
 		q.y = y
 		q.z = z
+		q.w = w
 		return q
 end
 
