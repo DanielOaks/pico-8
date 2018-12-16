@@ -16,18 +16,42 @@ function scenetime()
 		return time()
 end
 
+function deg2rad(a)
+		return 1/tan((a * 0.5)/(180*3.141592))
+end
+
 scene_just_entered = true
 
 -->8
--- vecs and tris
-function tri(vert1, vert2, vert3)
-		local triangle = {}
-		triangle.verts = {
-				vert1, vert2, vert3
+-- basics and dvector stuff
+
+-- triangle
+function tri(vec1, vec2, vec3)
+		local t = {}
+		t.verts = {
+				vec1, vec2, vec3
 		}
-		return triangle
+		return t
 end
 
+-- math
+function hypot(a, b)
+		return sqrt(a*a + b*b)
+end
+
+function acos(a)
+		return -cos(a)
+end
+
+function tan(a)
+		return sin(a)/cos(a)
+end
+
+-- vectors
+-- vec3 and vec4 used under cc0
+--  from https://github.com/barerose/dvector
+
+-- vec3
 function vec3(x, y, z)
 		v = {}
 		v.x = x
@@ -36,8 +60,284 @@ function vec3(x, y, z)
 		return v
 end
 
--->8
+function vec3length(v)
+		return hypot(hypot(v.x, v.y), v.z)
+end
+
+function vec3dotproduct(v1, v2)
+		return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z
+end
+
+function vec3negate(v)
+		return vec3(-v.x, -v.y, -v.z)
+end
+
+function vec3normalize(v)
+		return vec3divide(v, vec3length(v))
+end
+
+function vec3multiply(v, s)
+		return vec3(v.x*s, v.y*s, v.z*s)
+end
+
+function vec3divide(v, s)
+		return vec3(v.x/s, v.y/s, v.z/s)
+end
+
+function vec3add(v1, v2)
+		return vec3(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z)
+end
+
+function vec3subtract(v1, v2)
+		return vec3(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z)
+end
+
+function vec3reflect(v1, v2)
+		return vec3subtract(v1, vec3multiply(v2, 2*vec3dotproduct(v1, v2)))
+end
+
+function vec3crossproduct(v1, v2)
+		return vec3(v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x)
+end
+
+function vec3mix(v1, v2, s)
+		return vec3(v1.x+(v2.x-v1.x)*s, v1.y+(v2.y-v1.y)*s, v1.z+(v2.z-v1.z)*s)
+end
+
+function vec3equal(v1, v2)
+		return (v1.x == v2.x)and(v1.y == v2.y)and(v1.z == v2.z)
+end
+
+-- vec4
+function vec4(x, y, z, w)
+		v = {}
+		v.x = x
+		v.y = y
+		v.z = z
+		v.w = w
+		return v
+end
+
+function vec4length(v)
+		return hypot(hypot(v.x, v.y), hypot(v.z, v.w))
+end
+
+function vec4dotproduct(v1, v2)
+		return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z + v1.w*v2.w
+end
+
+function vec4negate(v)
+		return vec4(-v.x, -v.y, -v.z, -v.w)
+end
+
+function vec4normalize(v)
+		return vec4divide(v, vec4length(v))
+end
+
+function vec4multiply(v, s)
+		return vec4(v.x*s, v.y*s, v.z*s, v.w*s)
+end
+
+function vec4divide(v, s)
+		return vec4(v.x/s, v.y/s, v.z/s, v.w/s)
+end
+
+function vec4add(v1, v2)
+		return vec4(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z, v1.w+v2.w)
+end
+
+function vec4subtract(v1, v2)
+		return vec4(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z, v1.w-v2.w)
+end
+
+function vec4reflect(v1, v2)
+		return vec4subtract(v1, vec4multiply(v2, 2*vec4dotproduct(v1, v2)))
+end
+
+function vec4mix(v1, v2, s)
+		return vec4(v1.x+(v2.x-v1.x)*s, v1.y+(v2.y-v1.y)*s, v1.z+(v2.z-v1.z)*s, v1.w+(v2.w-v1.w)*s)
+end
+
+function vec4equal(v1, v2)
+		return (v1.x == v2.x)and(v1.y == v2.y)and(v1.z == v2.z)and(v1.w == v2.w)
+end
+
+-- matrices
+-- mat4 used under cc0
+--  from https://github.com/barerose/dvector
+function mat4zero()
+		return mat4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+end
+
+function mat4(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33)
+		m = {
+				{m00, m01, m02, m03},
+				{m10, m11, m12, m13},
+				{m20, m21, m22, m23},
+				{m30, m31, m32, m33},
+		}
+		return m
+end
+
+function mat4multiplyvector(m, v)
+		x = m[1][1]*v.x + m[1][2]*v.y + m[1][3]*v.z + m[1][4]*v.w
+		y = m[2][1]*v.x + m[2][2]*v.y + m[2][3]*v.z + m[2][4]*v.w
+		z = m[3][1]*v.x + m[3][2]*v.y + m[3][3]*v.z + m[3][4]*v.w
+		w = m[4][1]*v.x + m[4][2]*v.y + m[4][3]*v.z + m[4][4]*v.w
+		return vec4(x, y, z, w)
+end
+
+function mat4setrotationx(r)
+		c = cos(r)
+		s = sin(r)
+		return mat4(1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1)
+end
+
+function mat4setrotationy(r)
+		c = cos(r)
+		s = sin(r)
+  return mat4(c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1)
+end
+
+function mat4setrotationz(r)
+		c = cos(r)
+		s = sin(r)
+		return mat4(c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+end
+
+function mat4setrotationquaternion(q)
+		xx = q.x*q.x
+		xy = q.x*q.y
+		xz = q.x*q.z
+		xw = q.x*q.w
+		yy = q.y*q.y
+		yz = q.y*q.z
+		yw = q.y*q.w
+		zz = q.z*q.z
+		zw = q.z*q.w
+		return mat4(1-2*yy-2*zz, 2*xy+2*zw, 2*xz-2*yw, 0, 2*xy-2*zw, 1-2*xx-2*zz, 2*yz+2*xw, 0, 2*xz+2*yw, 2*yz-2*xw, 1-2*xx-2*yy, 0, 0, 0, 0, 1)
+end
+
+function mat4setscale(s)
+		return mat4(s, 0, 0, 0, 0, s, 0, 0, 0, 0, s, 0, 0, 0, 0, 1)
+end
+
+function mat4setscalexyz(v)
+		return mat4(v.x, 0, 0, 0, 0, v.y, 0, 0, 0, 0, v.z, 0, 0, 0, 0, 1)
+end
+
+function mat4settranslation(v)
+		return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, v.x, v.y, v.z, 1)
+end
+
+function mat4lookat(from, to, up)
+		f = vec3normalize(vec3subtract(to, from))
+		s = vec3normalize(vec3crossproduct(f, up))
+		t = vec3crossproduct(s, f)
+		m = mat4(s.x, t.x, -f.x, 0, s.y, t.y, -f.y, 0, s.z, t.z, -f.z, 0, 0, 0, 0, 1)
+		for i = 1, 4 do
+				m.m[4][i] = -vec3dotproduct(vec3(m.m[1][i], m.m[2][i], m.m[3][i]), from)
+		end
+		return m
+end
+
+function mat4perspective(vfov, aspect, ndist, fdist)
+		a = 1/tan(vfov/2)
+		return mat4(a/aspect, 0, 0, 0, 0, a, 0, 0, 0, 0, -((fdist+ndist)/(fdist-ndist)), -1, 0, 0, -((2*fdist*ndist)/(fdist-ndist)), 0)
+end
+
+function mat4ortho(left, right, bottom, top, ndist, fdist)
+  return mat4(2/(right-left), 0, 0, 0, 0, 2/(top-bottom), 0, 0, 0, 0, -2/(fdist-ndist), 0, -(right+left)/(right-left), -(top+bottom)/(top-bottom), -(fdist+ndist)/(fdist-ndist), 1)
+end
+
+function mat4transpose(m)
+		return mat4(m[1][1], m[2][1], m[3][1], m[4][1], m[1][2], m[2][2], m[3][2], m[4][2], m[1][3], m[2][3], m[3][3], m[4][3], m[1][4], m[2][4], m[3][4], m[4][4])
+end
+
+-- mat4inverse not transferred lol
+
+function mat4multiplyscalar(m, s)
+		new_m = mat4()
+		for i = 1, 4 do
+				for j = 1, 4 do
+						new_m[i][j] = m[i][j] * s
+				end
+		end
+		return new_m
+end
+
+function mat4rotatex(m, r)
+		return mat4multiplymatrix(mat4setrotationx(r), m)
+end
+
+function mat4rotatey(m, r)
+		return mat4multiplymatrix(mat4setrotationy(r), m)
+end
+
+function mat4rotatez(m, r)
+		return mat4multiplymatrix(mat4setrotationz(r), m)
+end
+
+function mat4rotatequaternion(m, q)
+		return mat4multiplymatrix(mat4setrotationquaternion(q), m)
+end
+
+function mat4scale(m, s)
+		return mat4multiplymatrix(mat4setscale(s), m)
+end
+
+function mat4scalexyz(m, v)
+		return mat4multiplymatrix(mat4setscalexyz(v), m)
+end
+
+function mat4translate(m, v)
+		return mat4multiplymatrix(mat4settranslation(v), m)
+end
+
+function mat4multiplymatrix(m1, m2)
+		m = mat4()
+		for i = 1, 4 do
+				for j = 1, 4 do
+						m[i][j] = m1[1][j]*m2[i][1] + m1[2][j]*m2[i][2] + m1[3][j]*m2[i][3] + m1[4][j]*m2[i][4]
+				end
+		end
+		return m
+end
+
+function mat4add(m1, m2)
+		m = mat4()
+		for i = 1, 4 do
+				for j = 1, 4 do
+						m[i][j] = m1[i][j] + m2[i][j]
+				end
+		end
+		return m
+end
+
+function mat4subtract(m1, m2)
+		m = mat4()
+		for i = 1, 4 do
+				for j = 1, 4 do
+						m[i][j] = m1[i][j] - m2[i][j]
+				end
+		end
+		return m
+end
+
+function mat4equal(m1, m2)
+		for i = 1, 4 do
+				for j = 1, 4 do
+						if m1[i][j] != m2[i][j] then
+								return false
+						end
+				end
+		end
+		return true
+end
+
 -- quaternions
+-- quat used under cc0
+--  from https://github.com/barerose/dvector
 function quat(x, y, z, w)
 		q = {}
 		q.x = x
@@ -47,98 +347,71 @@ function quat(x, y, z, w)
 		return q
 end
 
--- a is degrees, xyz == axis
-function rotating_quat(a, x, y, z)
-		-- deg -> rads
-		a = a/360 * 3.141592*2
-
-		-- make quaternion
-		w = cos(a*0.5)
-		sina2 = sin(a*0.5)
-		x = x*sina2
-		y = y*sina2
-		z = z*sina2
-		return quat(w, x, y, z)
+function quatxyz(q)
+		return vec3(q.x, q.y, q.z)
 end
 
-function multiply_quat(q1, q2)
-		w = q1.w*q2.w - q1.x*q2.x - q1.y*q2.y - q1.z*q2.z
-		x = q1.w*q2.w + q1.x*q2.x + q1.y*q2.y - q1.z*q2.z
-		y = q1.w*q2.w - q1.x*q2.x + q1.y*q2.y + q1.z*q2.z
-		z = q1.w*q2.w + q1.x*q2.x - q1.y*q2.y + q1.z*q2.z
-		return quat(w, x, y, z)
+function quatmultiplyvector(q, v)
+		t = vec3multiply(vec3crossproduct(quatxyz(q), v), 2)
+		v3 = vec3add(vec3add(v, vec3multiply(t, q.w)), vec3crossproduct(quatxyz(q), t))
+		return vec4(v3.x, v3.y, v3.z, 1)
 end
 
-function normalize_quat(q)
-		magnitude = sqrt(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z)
-		w = q.w / magnitude
-		x = q.x / magnitude
-		y = q.y / magnitude
-		z = q.z / magnitude
-		return quat(w, x, y, z)
+function quataxisangle(a, r)
+		s = sin(r/2)
+		return quat(a.x*s, a.y*s, a.z*s, cos(r/2))
 end
 
--- v is a vertex
--- rq is a rotating_quat
-_root_rotating_quat = quat(1, 0, 0, 0)
-function vert_quat_rotate(v, rq)
-		t = multiply_quat(_root_rotating_quat, rq)
-
-		mat_rq = mat4x4()
-		mat_rq[1][1] = 1 - 2*(t.y*t.y) - 2*(t.z*t.z)
-		mat_rq[1][2] = 2*t.x*t.y + 2*t.w*t.z
-		mat_rq[1][3] = 2*t.x*t.z - 2*t.w*t.y
-		mat_rq[2][1] = 2*t.x*t.y - 2*t.w*t.z
-		mat_rq[2][2] = 1 - 2*(t.x*t.x) - 2*(t.z*t.z)
-		mat_rq[2][3] = 2*t.y*t.z - 2*t.w*t.x
-		mat_rq[3][1] = 2*t.x*t.z + 2*t.w*t.y
-		mat_rq[3][2] = 2*t.y*t.z + 2*t.w*t.x
-		mat_rq[3][3] = 1 - 2*(t.x*t.x) - 2*(t.y*t.y)
-		mat_rq[4][4] = 1
-		
-		return multiply_matrix(v, mat_rq)
+function quateulerxyz(a, b, c)
+		return quatmultiply(quataxisangle(vec3(0, 0, 1), c), quatmultiply(quataxisangle(vec3(0, 1, 0), b), quataxisangle(vec3(1, 0, 0), a)))
 end
 
-function multiply_quat_tri(t, rq)
-		local v1 = vert_quat_rotate(t.verts[1], rq)
-		local v2 = vert_quat_rotate(t.verts[2], rq)
-		local v3 = vert_quat_rotate(t.verts[3], rq)
-		
-		return tri(v1, v2, v3, 0)
+function quateulerxzy(a, b, c)
+		return quatmultiply(quataxisangle(vec3(0, 1, 0), c), quatmultiply(quataxisangle(vec3(0, 0, 1), b), quataxisangle(vec3(1, 0, 0), a)))
 end
 
--->8
--- matrices
-function mat4x4()
-		mat = {}
-		for i = 1, 4 do
-				mat[i] = {0, 0, 0, 0}
-		end
-		return mat
+function quateuleryxz(a, b, c)
+		return quatmultiply(quataxisangle(vec3(0, 0, 1), c), quatmultiply(quataxisangle(vec3(1, 0, 0), b), quataxisangle(vec3(0, 1, 0), a)))
 end
 
-function multiply_matrix_tri(t, m)
-		local v1 = multiply_matrix(t.verts[1], m)
-		local v2 = multiply_matrix(t.verts[2], m)
-		local v3 = multiply_matrix(t.verts[3], m)
-		
-		return tri(v1, v2, v3, 0)
+function quateuleryzx(a, b, c)
+		return quatmultiply(quataxisangle(vec3(1, 0, 0), c), quatmultiply(quataxisangle(vec3(0, 0, 1), b), quataxisangle(vec3(0, 1, 0), a)))
 end
 
-function multiply_matrix(v, m)
-		local new_x = v[1] * m[1][1] + v[2] * m[2][1] + v[3] * m[3][1] + m[4][1]
-		local new_y = v[2] * m[1][2] + v[2] * m[2][2] + v[3] * m[3][2] + m[4][2]
-		local new_z = v[3] * m[1][3] + v[2] * m[2][3] + v[3] * m[3][3] + m[4][3]
+function quateulerzxy(a, b, c)
+		return quatmultiply(quataxisangle(vec3(0, 1, 0), c), quatmultiply(quataxisangle(vec3(1, 0, 0), b), quataxisangle(vec3(0, 0, 1), a)))
+end
 
-		local w = v[1] * m[1][4] + v[2] * m[2][4] + v[3] * m[3][4] + m[4][4]
+function quateulerzyx(a, b, c)
+		return quatmultiply(quataxisangle(vec3(1, 0, 0), c), quatmultiply(quataxisangle(vec3(0, 1, 0), b), quataxisangle(vec3(0, 0, 1), a)))
+end
 
-		if w != 0 then
-				new_x /= w
-				new_y /= w
-				new_z /= w
-		end
-		
-		return {new_x, new_y, new_z, w}
+function quatnormalize(q)
+		return vec4normalize(q)
+end
+
+function quatconjugate(q)
+		return quat(-q.x, -q.y, -q.z, q.w)
+end
+
+function quatlerp(q1, q2, s)
+		return quatnormalize(quat((1-s)*q1.x + s*q2.x, (1-s)*q1.y + s*q2.y, (1-s)*q1.z + s*q2.z, (1-s)*q1.w + s*q2.w))
+end
+
+function quatslerp(q1, q2, s)
+		th = acos(q1.x*q2.x + q1.y*q2.y + q1.z*q2.z + q1.w*q2.w)
+		sn = sin(th)
+		wa = sin((1-s)*th)/sn
+		wb = sin(s*th)/sn
+		return quatnormalize(quat(wa*q1.x + wb*q2.x, wa*q1.y + wb*q2.y, wa*q1.z + wb*q2.z, wa*q1.w + wb*q2.w))
+end
+
+function quatmultiply(q1, q2)
+		return quat(q1.x*q2.w + q1.y*q2.z - q1.z*q2.y + q1.w*q2.x, -q1.x*q2.z + q1.y*q2.w + q1.z*q2.x + q1.w*q2.y, q1.x*q2.y - q1.y*q2.x + q1.z*q2.w + q1.w*q2.z, -q1.x*q2.x - q1.y*q2.y - q1.z*q2.z + q1.w*q2.w)
+end
+
+function quatequal(q1, q2)
+		return vec4equal(q1, q2)
 end
 
 -->8
@@ -146,9 +419,9 @@ end
 
 -- obj file with newlines replaced with ;'s
 --cube_obj = "v -0.5 -0.5 -0.5;v 0.5 -0.5 -0.5;v 0.5 -0.5 0.5;v -0.5 -0.5 0.5;v -0.5 0.5 -0.5;v 0.5 0.5 -0.5;v 0.5 0.5 0.5;v -0.5 0.5 0.5;f 2 1 5 6;f 3 2 6 7;f 4 3 7 8;f 1 4 8 5;f 3 4 1 2;f 6 5 8 7;"
-cube_obj = "v 1 -2.6226834e-08 -3.01991605e-07;v 0.623489678 -2.6226834e-08 -0.781831622;v -0.222521007 -2.6226834e-08 -0.974927902;v -0.90096885 -2.6226834e-08 -0.433883756;v -0.900968909 -2.6226834e-08 0.433883607;v -0.222520947 -2.6226834e-08 0.974927902;v 0.623489797 -2.6226834e-08 0.781831503;v 0.887046874 -0.234549493 -2.67880722e-07;v 0.553064585 -0.234549493 -0.693521321;v -0.197386563 -0.234549493 -0.864806771;v -0.799201608 -0.234549493 -0.384875238;v -0.799201667 -0.234549493 0.384875089;v -0.197386518 -0.234549493 0.864806771;v 0.553064704 -0.234549493 0.693521202;v 0.63324368 -0.292478383 -1.91234278e-07;v 0.394820899 -0.292478383 -0.495089948;v -0.140910015 -0.292478383 -0.61736691;v -0.570532858 -0.292478383 -0.274754137;v -0.570532858 -0.292478383 0.274754047;v -0.140909985 -0.292478383 0.61736691;v 0.394820988 -0.292478383 0.495089859;v 0.429709315 -0.13016513 -1.29768608e-07;v 0.267919332 -0.13016513 -0.335960329;v -0.0956193507 -0.13016513 -0.418935597;v -0.387154698 -0.13016513 -0.186443895;v -0.387154728 -0.13016513 0.186443821;v -0.0956193209 -0.13016513 0.418935597;v 0.267919362 -0.13016513 0.335960269;v 0.429709315 0.1301651 -1.29768608e-07;v 0.267919332 0.1301651 -0.335960329;v -0.0956193507 0.1301651 -0.418935597;v -0.387154698 0.1301651 -0.186443895;v -0.387154728 0.1301651 0.186443821;v -0.0956193209 0.1301651 0.418935597;v 0.267919362 0.1301651 0.335960269;v 0.63324362 0.292478353 -1.91234264e-07;v 0.394820869 0.292478353 -0.495089889;v -0.140910015 0.292478353 -0.61736685;v -0.570532799 0.292478353 -0.274754107;v -0.570532799 0.292478353 0.274754018;v -0.14090997 0.292478353 0.61736685;v 0.394820929 0.292478353 0.495089799;v 0.887046874 0.234549507 -2.67880722e-07;v 0.553064585 0.234549507 -0.693521321;v -0.197386563 0.234549507 -0.864806771;v -0.799201608 0.234549507 -0.384875238;v -0.799201667 0.234549507 0.384875089;v -0.197386518 0.234549507 0.864806771;v 0.553064704 0.234549507 0.693521202;g ;f 1 9 2;f 1 8 9;f 2 10 3;f 2 9 10;f 3 11 4;f 3 10 11;f 4 12 5;f 4 11 12;f 5 13 6;f 5 12 13;f 6 14 7;f 6 13 14;f 7 8 1;f 7 14 8;f 8 16 9;f 8 15 16;f 9 17 10;f 9 16 17;f 10 18 11;f 10 17 18;f 11 19 12;f 11 18 19;f 12 20 13;f 12 19 20;f 13 21 14;f 13 20 21;f 14 15 8;f 14 21 15;f 15 23 16;f 15 22 23;f 16 24 17;f 16 23 24;f 17 25 18;f 17 24 25;f 18 26 19;f 18 25 26;f 19 27 20;f 19 26 27;f 20 28 21;f 20 27 28;f 21 22 15;f 21 28 22;f 22 30 23;f 22 29 30;f 23 31 24;f 23 30 31;f 24 32 25;f 24 31 32;f 25 33 26;f 25 32 33;f 26 34 27;f 26 33 34;f 27 35 28;f 27 34 35;f 28 29 22;f 28 35 29;f 29 37 30;f 29 36 37;f 30 38 31;f 30 37 38;f 31 39 32;f 31 38 39;f 32 40 33;f 32 39 40;f 33 41 34;f 33 40 41;f 34 42 35;f 34 41 42;f 35 36 29;f 35 42 36;f 36 44 37;f 36 43 44;f 37 45 38;f 37 44 45;f 38 46 39;f 38 45 46;f 39 47 40;f 39 46 47;f 40 48 41;f 40 47 48;f 41 49 42;f 41 48 49;f 42 43 36;f 42 49 43;f 43 2 44;f 43 1 2;f 44 3 45;f 44 2 3;f 45 4 46;f 45 3 4;f 46 5 47;f 46 4 5;f 47 6 48;f 47 5 6;f 48 7 49;f 48 6 7;f 49 1 43;f 49 7 1;"
+cube_obj = "v 0 0 -0.5;v 0 0.44721368 -0.223606572;v 0.425325423 0.138196841 -0.223606601;v 0.262865603 -0.361803472 -0.223606631;v -0.262865603 -0.361803472 -0.223606631;v -0.425325423 0.138196841 -0.223606601;v -0.262865603 0.361803472 0.223606631;v -0.425325423 -0.138196841 0.223606601;v 0 -0.44721368 0.223606572;v 0.425325423 -0.138196841 0.223606601;v 0.262865603 0.361803472 0.223606631;v 0 0 0.5;g ;f 3 1 2;f 4 1 3;f 5 1 4;f 6 1 5;f 2 1 6;f 7 2 6;f 8 6 5;f 9 5 4;f 10 4 3;f 11 3 2;f 11 2 7;f 7 6 8;f 8 5 9;f 9 4 10;f 10 3 11;f 7 12 11;f 11 12 10;f 10 12 9;f 9 12 8;f 8 12 7;"
 cube = {} -- loaded at runtime
-obj_z_offset = 2
+obj_z_offset = 5
 
 function split_string(str, char)
 		split = {}
@@ -181,16 +454,13 @@ function mesh_from_objstring(obj)
 				parts = split_string(l, " ")
 				if 0 < #parts then
 						if parts[1] == "v" then
-								verts[#verts+1] = {
-										parts[2]+0.0, parts[3]+0.0, parts[4]+0.0,
-								}
+								verts[#verts+1] = vec3(parts[2]+0.0, parts[3]+0.0, parts[4]+0.0)
 						elseif parts[1] == "f" then
 								newface = {}
 								newface.verts = {
 										verts[parts[2]+0],
 										verts[parts[3]+0],
 										verts[parts[4]+0],
-										1,
 								}
 								faces[#faces+1] = newface
   						if 4 < #parts then
@@ -199,7 +469,6 @@ function mesh_from_objstring(obj)
 												verts[parts[2]+0],
 												verts[parts[4]+0],
 												verts[parts[5]+0],
-												1,
   								}
   								faces[#faces+1] = newface
   						end
@@ -215,21 +484,14 @@ end
 
 -->8
 -- 3d rendering
-render_aspect = 1 -- aspect ratio
-render_fov = 90
-_render_fov_rad = 1/tan((render_fov * 0.5)/(180*3.141592))
-render_znear = 0.1
-render_zfar = 1000
+aspect = 1 -- since h and w are always the same
+vfov = deg2rad(90)
+ndist = 0.1
+fdist = 1000
 
-mat_proj = mat4x4()
-mat_proj[1][1] = render_aspect * _render_fov_rad
-mat_proj[2][2] = _render_fov_rad
-mat_proj[3][3] = render_zfar / (render_zfar-render_znear)
-mat_proj[4][3] = (-render_zfar * render_znear) / (render_zfar - render_znear)
-mat_proj[3][4] = 1
-mat_proj[4][4] = 0
+mat_perspective = mat4perspective(vfov, aspect, ndist, fdist)
 
-mat_screen = mat4x4()
+mat_screen = mat4zero()
 mat_screen[1][1] = 0.5*127
 mat_screen[2][2] = 0.5*127
 mat_screen[3][3] = 0.5*127
@@ -258,21 +520,11 @@ function _draw()
 
 		-- do your effect here
 		cls()
-		
-		-- matrix rotation
-		local ftheta = scenetime() * 0.4
-		local mat_rot_x = mat4x4()
-		mat_rot_x[1][1] = 1
-		mat_rot_x[2][2] = cos(ftheta * 0.5)
-		mat_rot_x[2][3] = sin(ftheta * 0.5)
-		mat_rot_x[3][2] = -sin(ftheta * 0.5)
-		mat_rot_x[3][3] = cos(ftheta * 0.5)
-		mat_rot_x[4][4] = 1
 
 		-- quat rotation
-		local a = sin(scenetime()*0.035) * 50
-		local q_rotate_x = rotating_quat(a, 0, 0, 1)
-				
+		local a = sin(scenetime()*0.025) * 2
+		local q_rotate = quateulerxyz(.3+a, .15+a, -a*0.5)
+
 		local t
 		local t_proj_1
 		local t_proj_2
@@ -284,37 +536,38 @@ function _draw()
 				-- so we can modify it fine
 				t = tri()
 				for j = 1, 3 do
-						t.verts[j] = {t_orig.verts[j][1], t_orig.verts[j][2], t_orig.verts[j][3], t_orig.verts[j][4]}
+						t.verts[j] = vec4(t_orig.verts[j].x, t_orig.verts[j].y, t_orig.verts[j].z, 1)
 				end
 				
 				-- rotate
-				--t = multiply_matrix_tri(t, mat_rot_xy)
-				--t = multiply_matrix_tri(t, mat_rot_x)
-				t = multiply_quat_tri(t, q_rotate_x)
-				--t = multiply_matrix_tri(t, mat_rot_y)
+				for i = 1, 3 do
+						t.verts[i] = quatmultiplyvector(q_rotate, t.verts[i])
+				end
 				
 				-- to world space
-				t.verts[1][3] += obj_z_offset
-				t.verts[2][3] += obj_z_offset
-				t.verts[3][3] += obj_z_offset
+				t.verts[1].z += obj_z_offset
+				t.verts[2].z += obj_z_offset
+				t.verts[3].z += obj_z_offset
 
 				-- to view space
-				t = multiply_matrix_tri(t, mat_proj)
-				t.verts[1][1] /= t.verts[1][4];t.verts[1][2] /= t.verts[1][4];t.verts[1][3] /= t.verts[1][4];
-				t.verts[2][1] /= t.verts[2][4];t.verts[2][2] /= t.verts[2][4];t.verts[2][3] /= t.verts[2][4];
-				t.verts[3][1] /= t.verts[3][4];t.verts[3][2] /= t.verts[3][4];t.verts[3][3] /= t.verts[3][4];
+				for i = 1, 3 do
+						t.verts[i] = mat4multiplyvector(mat_perspective, t.verts[i])
+						t.verts[i].x /= t.verts[i].w; t.verts[i].y /= t.verts[i].w; t.verts[i].z /= t.verts[i].w
+				end
 				
 				-- to screen space
-				t.verts[1][1] += 1; t.verts[1][2] += 1
-				t.verts[2][1] += 1; t.verts[2][2] += 1
-				t.verts[3][1] += 1; t.verts[3][2] += 1
-				t = multiply_matrix_tri(t, mat_screen)
+				t.verts[1].x += 1; t.verts[1].y += 1
+				t.verts[2].x += 1; t.verts[2].y += 1
+				t.verts[3].x += 1; t.verts[3].y += 1
+				for i = 1, 3 do
+						t.verts[i] = mat4multiplyvector(mat_screen, t.verts[i])
+				end
 				
 				-- draw eet
 				color(col)
-				line(t.verts[1][1], t.verts[1][2], t.verts[2][1], t.verts[2][2])
-				line(t.verts[2][1], t.verts[2][2], t.verts[3][1], t.verts[3][2])
-				line(t.verts[3][1], t.verts[3][2], t.verts[1][1], t.verts[1][2])
+				line(t.verts[1].x, t.verts[1].y, t.verts[2].x, t.verts[2].y)
+				line(t.verts[2].x, t.verts[2].y, t.verts[3].x, t.verts[3].y)
+				line(t.verts[3].x, t.verts[3].y, t.verts[1].x, t.verts[1].y)
 				
   		col += 1
   		if 15 < col then

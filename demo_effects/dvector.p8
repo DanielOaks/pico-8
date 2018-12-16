@@ -331,9 +331,15 @@ function quatxyz(q)
 		return vec3(q.x, q.y, q.z)
 end
 
-function quatmultiplyvector(q, v)
+function quatmultiplyvector3(q, v)
 		t = vec3multiply(vec3crossproduct(quatxyz(q), v), 2)
 		return vec3add(vec3add(v, vec3multiply(t, q.w)), vec3crossproduct(quatxyz(q), t))
+end
+
+function quatmultiplyvector4(q, v)
+		t = vec3multiply(vec3crossproduct(quatxyz(q), v), 2)
+		v3 = vec3add(vec3add(v, vec3multiply(t, q.w)), vec3crossproduct(quatxyz(q), t))
+		return vec4(v3.x, v3.y, v3.z, 1)
 end
 
 function quataxisangle(a, r)
