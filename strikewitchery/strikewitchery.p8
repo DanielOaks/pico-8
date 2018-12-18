@@ -56,7 +56,13 @@ function demo_update()
 end
 -->8
 -- runtime
+pnop_x = 28
+pnop_y = 42
+pnop_width = 9
+pnop_height = 5
+
 function _init()
+		-- start music
 		music(0)
 end
 
@@ -73,32 +79,61 @@ function _draw()
 		sc = -1
 		if current_scene == sc then
 				-- do nothing
-				
-				-- temp green fill
-				color(11)
-				rectfill(0, 0, 127, 127)
 		end
 		
 		sc += 1
 		if current_scene == sc then
-				inpix = min(128, st * 250)
+				inpix = min(128, st * 150)
 
-				pnop_x = 28
-				pnop_y = 42
 				if 127 < inpix then
 						cls(0)
-						spr(176, pnop_x, pnop_y, 9, 5)
+						spr(176, pnop_x, pnop_y, pnop_width, pnop_height)
 				else
 						color(0)
+						pal(10, 7)
+						pal(9, 6)
+						pal(8, 5)
   				for i = 0, 64 do
    					-- left pixels
    					y = i+i
    					line(-1, y, inpix, y)
+   					
+   					-- draw logo on top of left pixels
+   					spry = flr(128-(pnop_height*8)+(y-pnop_y))
+   					spry_on_spr = y-pnop_y
+   					if 128-(pnop_height*8) <= spry and spry < 128 then
+     					for x = -1, inpix do
+     							sprx = flr(x + (128-inpix) - pnop_x)
+     							if 0 < sprx and sprx <= pnop_width*8 then
+     									c = sget(sprx, spry)
+     									if c != 0 then
+		     									pset(x, y, c)
+		     							end
+     							end
+     					end
+		   					color(0)
+		   			end
    
    					-- right pixels
    					y += 1
    					line(128, y, 128-inpix, y)
+   					   					
+   					-- draw logo on top of right pixels
+   					-- relying on previous calcs a lot
+   					spry += 1
+   					spry_on_spr += 1
+   					if spry < 128 then
+     					for x = (128-inpix), 128 do
+     							sprx = (x - pnop_x) - (128-inpix)
+     							if 0 < sprx and sprx <= pnop_width*8 then
+     									c = sget(sprx, spry)
+     									pset(x, y, c)
+     							end
+     					end
+		   					color(0)
+		   			end
   				end
+  				pal()
   		end
 		end
 		
