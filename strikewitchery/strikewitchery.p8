@@ -60,6 +60,9 @@ pnop_x = 28
 pnop_y = 42
 pnop_width = 9
 pnop_height = 5
+pnop_fadeout_started = false
+pnop_fadeout_particles = {}
+pnop_fadeout_stime = 0
 
 function _init()
 		-- start music
@@ -83,68 +86,99 @@ function _draw()
 		
 		sc += 1
 		if current_scene == sc then
-				inpix = min(128, st * 150)
+				-- pixienop intro
+				if 2.94 < st then
+						-- fade out
+						if not pnop_fadeout_started then
+								pnop_fadeout_started = true
+								pnop_fadeout_stime = st
+								
+								pnop_fadeout_particles = {}
+								for x = 0, 127 do
+										pnop_fadeout_particles[x] = -flr(rnd(100))
+								end
+						end
 
-				if 127 < inpix then
-						cls(0)
-						spr(176, pnop_x, pnop_y, pnop_width, pnop_height)
-				else
 						color(0)
-						pal(10, 7)
-						pal(9, 6)
-						pal(8, 5)
-  				for i = 0, 64 do
-   					-- left pixels
-   					y = i+i
-   					line(-1, y, inpix, y)
-   					
-   					-- draw logo on top of left pixels
-   					spry = flr(128-(pnop_height*8)+(y-pnop_y))
-   					spry_on_spr = y-pnop_y
-   					if 128-(pnop_height*8) <= spry and spry < 128 then
-     					for x = -1, inpix do
-     							sprx = flr(x + (128-inpix) - pnop_x)
-     							if 0 < sprx and sprx <= pnop_width*8 then
-     									c = sget(sprx, spry)
-     									if c != 0 then
-		     									pset(x, y, c)
-		     							end
-     							end
-     					end
-		   					color(0)
-		   			end
-   
-   					-- right pixels
-   					y += 1
-   					line(128, y, 128-inpix, y)
-   					   					
-   					-- draw logo on top of right pixels
-   					-- relying on previous calcs a lot
-   					spry += 1
-   					spry_on_spr += 1
-   					if spry < 128 then
-     					for x = (128-inpix), 128 do
-     							sprx = (x - pnop_x) - (128-inpix)
-     							if 0 < sprx and sprx <= pnop_width*8 then
-     									c = sget(sprx, spry)
-     									pset(x, y, c)
-     							end
-     					end
-		   					color(0)
-		   			end
-  				end
-  				pal()
-  		end
+						for x = 0, 127 do
+								line(x, -1, x, min(127, pnop_fadeout_particles[x] + (st-pnop_fadeout_stime)*200))
+						end
+						
+				else
+						pnop_fadeout_started = false
+  				inpix = min(128, st * 150)
+  
+  				if 127 < inpix then
+  						cls(0)
+  						spr(176, pnop_x, pnop_y, pnop_width, pnop_height)
+  				else
+  						color(0)
+  						pal(10, 7)
+  						pal(9, 6)
+  						pal(8, 5)
+    				for i = 0, 64 do
+     					-- left pixels
+     					y = i+i
+     					line(-1, y, inpix, y)
+     					
+     					a = {
+     							7
+     					}
+     					
+     					-- draw logo on top of left pixels
+     					spry = flr(128-(pnop_height*8)+(y-pnop_y))
+     					spry_on_spr = y-pnop_y
+     					if 128-(pnop_height*8) <= spry and spry < 128 then
+       					for x = -1, inpix do
+       							sprx = flr(x + (128-inpix) - pnop_x)
+       							if 0 < sprx and sprx <= pnop_width*8 then
+       									c = sget(sprx, spry)
+       									if c != 0 then
+  		     									pset(x, y, c)
+  		     							end
+       							end
+       					end
+  		   					color(0)
+  		   			end
+     
+     					-- right pixels
+     					y += 1
+     					line(128, y, 128-inpix, y)
+     					   					
+     					-- draw logo on top of right pixels
+     					-- relying on previous calcs a lot
+     					spry += 1
+     					spry_on_spr += 1
+     					if 128-(pnop_height*8) <= spry and spry < 128 then
+       					for x = (128-inpix), 128 do
+       							sprx = (x - pnop_x) - (128-inpix)
+       							if 0 < sprx and sprx <= pnop_width*8 then
+       									c = sget(sprx, spry)
+       									pset(x, y, c)
+       							end
+       					end
+  		   					color(0)
+  		   			end
+    				end
+    		end
+    end
+				pal()
 		end
 		
 		sc += 1
 		if current_scene == sc then
+				-- title page
 				color(3)
 				rectfill(0, 0, 127, 127)
 
 				color(11)
 				print("welcome to da demo", 30, 50 + sin(dt)*5)
 				print("scene "..current_scene, 90 + cos(dt)*4.9, 90 + sin(-dt)*5.9)
+				
+				if flr((cos(st*0.73)+1)*0.9) % 2 == 0 then
+						color(10)
+						print("insert coin", 5, 5)
+				end
 		end
 		
 		sc += 1
