@@ -4,6 +4,80 @@ __lua__
 -- mai breakout
 -- pixienop 2019
 -- cc0 / public domain~
+-->8
+-- dvector
+-- vec2 used under cc0
+--  from https://github.com/barerose/dvector
+
+function hypot(a, b)
+		return sqrt(a*a + b*b)
+end
+
+function vec2(x, y)
+		v = {}
+		v.x = x
+		v.y = y
+		return v
+end
+
+function vec2length (v)
+    return hypot(v.x, v.y)
+end
+
+function vec2dotproduct (v1, v2)
+    return v1.x*v2.x + v1.y*v2.y
+end
+
+function vec2negate (v)
+    return vec2(-v.x, -v.y)
+end
+
+function vec2normalize (v)
+    return vec2divide(v, vec2length(v))
+end
+
+function vec2multiply (v, s)
+    return vec2(v.x*s, v.y*s)
+end
+
+function vec2divide (v, s)
+    return vec2(v.x/s, v.y/s)
+end
+
+function vec2rotate (v, r)
+    c = cos(r)
+    s = sin(r)
+    return vec2(v.x*c-v.y*s, v.y*c+v.x*s)
+end
+
+function vec2rotatexz (v, r)
+    c = cos(r)
+    s = sin(r)
+    return vec2(v.x*c+v.y*s, v.y*c-v.x*s)
+end
+
+function vec2add (v1, v2)
+    return vec2(v1.x+v2.x, v1.y+v2.y)
+end
+
+function vec2subtract (v1, v2)
+    return vec2(v1.x-v2.x, v1.y-v2.y)
+end
+
+function vec2reflect (v1, v2)
+    return vec2subtract(v1, vec2multiply(v2, 2*vec2dotproduct(v1, v2)))
+end
+
+function vec2mix (v1, v2, s)
+    return vec2(v1.x+(v2.x-v1.x)*s, v1.y+(v2.y-v1.y)*s)
+end
+
+function vec2equal (v1, v2)
+    return (v1.x == v2.x) and (v1.y == v2.y)
+end
+
+-->8
+-- main game
 
 -- start menu stuff
 start_menu_x = 40
@@ -18,6 +92,10 @@ start_menu_entries[2] = {}
 start_menu_entries[2].name = "other option"
 start_menu_entries[2].state = "otherstate"
 sm_transfer = false
+
+-- actual game stuff
+ball_pos = vec2(50, 80)
+ball_vector = vec2normalize(vec2(0.5, -0.2))
 
 -- state handling
 state = "introwait"
@@ -79,6 +157,10 @@ function _update()
 						sm_transfer = true
 						state_just_entered = true
 				end
+		end
+		
+		if state == "1p-lvl1" then
+				ball_pos = vec2add(ball_pos, ball_vector)
 		end
 end
 
@@ -154,6 +236,8 @@ function _draw()
 				padl_x = x * 128 - padl_w * x
 				padl_y = 110
 				rectfill(padl_x, padl_y, padl_x+padl_w, padl_y+padl_h, 7)
+				
+				spr(1, ball_pos.x, ball_pos.y)
 		end
 
 		-- print debug info
