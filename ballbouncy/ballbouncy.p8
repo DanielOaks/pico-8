@@ -17,6 +17,7 @@ start_menu_entries[1].state = "1p-lvl1"
 start_menu_entries[2] = {}
 start_menu_entries[2].name = "other option"
 start_menu_entries[2].state = "otherstate"
+sm_transfer = false
 
 -- state handling
 state = "introwait"
@@ -25,7 +26,7 @@ continue_state = 0
 state_updated_this_pattern = true
 state_just_entered = true
 state_start_time = 0
-show_debug = false
+show_debug = true
 
 function stime()
 		return time() - state_start_time
@@ -57,16 +58,6 @@ function _update()
 				state_updated_this_pattern = false
 		end
 		
-		-- low-pass music with pause button
-		if music_is_lowpassed then
-				music_is_lowpassed = false
-				poke(0x5f43,0)
-		end
-		if (btnp() == 64) then
-		  music_is_lowpassed = true
-		  poke(0x5f43,1+2+4+8)
-		end
-		
 		-- start menu
 		if state == "menu" then
 				if btnp(⬇️) then
@@ -82,6 +73,12 @@ function _update()
 				elseif #start_menu_entries < start_menu_choice then
 						start_menu_choice = 1
 				end
+				
+				if btnp(🅾️) or btnp(❎) then
+						state = start_menu_entries[start_menu_choice].state
+						sm_transfer = true
+						state_just_entered = true
+				end
 		end
 end
 
@@ -89,9 +86,11 @@ function _draw()
 		pat = stat(20)
 		st = stime()
 
+		-- pnop logo
 		if state == "pixienop" then
 				if state_just_entered then
 						next_state = "menu"
+						state_just_entered = false
 				end
 				cls()
 				pnop_x = 28
@@ -111,9 +110,11 @@ function _draw()
 				pal()
 		end
 		
+		-- start menu
 		if state == "menu" then
 				if state_just_entered then
 						start_menu_choice = 1
+						state_just_entered = false
 				end
 				
 				cls(2)
@@ -132,8 +133,27 @@ function _draw()
 				end
 				
 				-- intro cover
-				color(0)
-				rectfill(min(st*320, 128), 0, 128, 127)
+				if st < 10 then
+  				color(0)
+  				rectfill(min(st*320, 128), 0, 128, 127)
+  		end
+		end
+		
+		-- lvl 1
+		if state == "1p-lvl1" then
+				if state_just_entered then
+						state_just_entered = false
+				end
+				
+				cls(12)
+				
+				padl_w = 25
+				padl_h = 3
+
+				x = ((cos(st*0.8)*sin(st*0.4))+1)*0.5
+				padl_x = x * 128 - padl_w * x
+				padl_y = 110
+				rectfill(padl_x, padl_y, padl_x+padl_w, padl_y+padl_h, 7)
 		end
 
 		-- print debug info
@@ -153,8 +173,6 @@ function _draw()
   		print("    " .. stat(2), 1, 1+6)
   		print("fps:" .. stat(7) .. "/" .. stat(8), 1, 1+6+6)
 		end
-
-		state_just_entered = false
 end
 
 __gfx__
@@ -287,8 +305,8 @@ __gfx__
 00000000000000000000000000000000000000000aaa099908880888000008800000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
-011000002466300500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-011000000c36300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000001d26500500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000001826500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
