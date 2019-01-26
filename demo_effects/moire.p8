@@ -2,7 +2,12 @@ pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
 -- effect-specific info
-
+moire_cols = {
+		{8, 9, 10},
+		{12, 13, 14},
+		{14, 2, 8},
+		{4, 15, 7},
+}
 
 
 -- default demo stuff
@@ -43,7 +48,7 @@ function _draw()
 
 		-- do your effect here
 		local origin_x = 50 + sin(st*0.6)*20
-		local origin_y = 60 + cos(st*1.3)*30
+		local origin_y = 60 + cos(st*0.3)*30
 		
 		local origin2_x = 70 + sin(st*0.8)*40
 		local origin2_y = 40 + cos(st*0.75)*40
@@ -61,10 +66,13 @@ function _draw()
 						local val2mod = sin(val2*mmod)
 						
 						local col = 1
+						local col_chosen = flr(((cos(st*0.1)+1)*0.49) * #moire_cols + 1)
 						if mlim < val1mod and mlim < val2mod then
-								col = 7
-						elseif mlim < val1mod or mlim < val2mod then
-								col = 7
+								col = moire_cols[col_chosen][2]
+						elseif mlim < val1mod then
+								col = moire_cols[col_chosen][3]
+						elseif mlim < val2mod then
+								col = moire_cols[col_chosen][1]
 						end
 						
 						if col != 1 then
