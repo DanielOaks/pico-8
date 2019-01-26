@@ -99,6 +99,7 @@ ball_pos = vec2(50, 80)
 ball_vector = vec2normalize(vec2(0.5, -0.2))
 ball_collide_steps = 10
 ball_collide_step = 1/ball_collide_steps
+paddle_pos = 50
 
 -- state handling
 state = "introwait"
@@ -169,7 +170,19 @@ function _update()
 		
 		-- actual gameplay
 		if state == "1p-lvl1" then
-				local n = vec2add(ball_pos, ball_vector)
+				if btn(⬅️) then
+						paddle_pos = max(0, paddle_pos-3)
+				end
+				if btn(➡️) then
+						paddle_pos = min(100, paddle_pos+3)
+				end
+		
+				local n = ball_pos
+				for i = 1, ball_collide_steps do
+						local vecstep = vec2multiply(ball_vector, ball_collide_step*i)
+				end
+				
+				--[[local n = vec2add(ball_pos, ball_vector)
 				if flr(n.x)+2 < 0 or 127 < flr(n.x)+5 then
 						for i = 0, ball_collide_steps do
 								n = vec2add(ball_pos, vec2multiply(ball_vector, ball_collide_step*i))
@@ -189,7 +202,7 @@ function _update()
 										break
 								end
 						end
-				end
+				end]]
 				ball_pos = n
 		end
 end
@@ -262,7 +275,8 @@ function _draw()
 				padl_w = 25
 				padl_h = 3
 
-				x = ((cos(st*0.8)*sin(st*0.4))+1)*0.5
+				--x = ((cos(st*0.8)*sin(st*0.4))+1)*0.5
+				x = (paddle_pos / 100)
 				padl_x = x * 128 - padl_w * x
 				padl_y = 110
 				rectfill(padl_x, padl_y, padl_x+padl_w, padl_y+padl_h, 7)
