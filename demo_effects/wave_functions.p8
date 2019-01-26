@@ -47,18 +47,18 @@ function _draw()
 		-- do your effect here
 		cls()
 		
-		print("functions~", 88, 1, 13)
+		print("wave functions~", 68, 1, 13)
 		color(7)
 		
 		-- sine
 		local ybase = 1
-		local diff = 18
+		local diff = 17
 		
-		line(0,6 + ybase,127,6 + ybase)
-		line(0,16 + ybase,127,16 + ybase)
-		local ymid = ybase + 11.5
+		line(0,5 + ybase,127,5 + ybase)
+		line(0,15 + ybase,127,15 + ybase)
+		local ymid = ybase + 10.5
 		local yrange = 3.4
-		print("sine", 1, ybase)
+		print("sine", 1, ybase, 12)
 		for x = 0, 127 do
 				pset(x, ymid + sin(st + x/10)*yrange, 12)
 		end
@@ -67,11 +67,11 @@ function _draw()
 		-- cos
 		ybase += diff
 		
-		line(0,6 + ybase,127,6 + ybase)
-		line(0,16 + ybase,127,16 + ybase)
-		local ymid = ybase + 11.5
+		line(0,5 + ybase,127,5 + ybase)
+		line(0,15 + ybase,127,15 + ybase)
+		local ymid = ybase + 10.5
 		local yrange = 3.4
-		print("cos", 1, ybase)
+		print("cos", 1, ybase, 3)
 		for x = 0, 127 do
 				pset(x, ymid + cos(st + x/10)*yrange, 3)
 		end
@@ -80,11 +80,11 @@ function _draw()
 		-- saw
 		ybase += diff
 		
-		line(0,6 + ybase,127,6 + ybase)
-		line(0,16 + ybase,127,16 + ybase)
-		local ymid = ybase + 11.5
+		line(0,5 + ybase,127,5 + ybase)
+		line(0,15 + ybase,127,15 + ybase)
+		local ymid = ybase + 10.5
 		local yrange = 3.4
-		print("saw", 1, ybase)
+		print("saw", 1, ybase, 8)
 		for x = 0, 127 do
 				local thisx = x/10
 				pset(x, ymid + yrange * (((thisx+st)%1)*2-1), 8)
@@ -94,11 +94,11 @@ function _draw()
 		-- square
 		ybase += diff
 		
-		line(0,6 + ybase,127,6 + ybase)
-		line(0,16 + ybase,127,16 + ybase)
-		local ymid = ybase + 11.5
+		line(0,5 + ybase,127,5 + ybase)
+		line(0,15 + ybase,127,15 + ybase)
+		local ymid = ybase + 10.5
 		local yrange = 3.4
-		print("square", 1, ybase)
+		print("square", 1, ybase, 14)
 		for x = 0, 127 do
 				local thisx = x/10
 				local res = 1
@@ -106,6 +106,20 @@ function _draw()
 						res = -1
 				end
 				pset(x, ymid + yrange * res, 14)
+		end
+		color(7)
+		
+		-- triangle
+		ybase += diff
+
+		line(0,5 + ybase,127,5 + ybase)
+		line(0,15 + ybase,127,15 + ybase)
+		local ymid = ybase + 10.5
+		local yrange = 3.4
+		print("triangle", 1, ybase, 10)
+		for x = 0, 127 do
+				local thisx = x*0.5
+				pset(x, ymid + yrange*(((abs(((thisx+st*4.75)%6)-3)/3)-0.5)*2), 10)
 		end
 		color(7)
 		
