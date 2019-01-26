@@ -5,8 +5,31 @@ __lua__
 tunnel_rainbow_pattern = {
 		8,9,10,11,3,12,13,2,14,
 		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,14,
+		8,9,10,11,3,12,13,2,
 }
+tunnel_reseti = 0
+tunnel_resetrate = -1
 tunnel_resetbase = 0
+tunnel_resetthisround = 0
+tunnel_currentcol = 0
+
+tmodsize_min = 3
+tmodsize_max = 140
+tmodsize_diff = tmodsize_max - tmodsize_min
+tmodscale_max = 2.5
 
 
 -- default demo stuff
@@ -37,7 +60,16 @@ function _update()
 		end
 
 		-- effect-update stuff
-		
+		tunnel_reseti += 1
+		if tunnel_resetrate < tunnel_reseti then
+				tunnel_reseti = 0
+				tunnel_currentcol += 1
+				tunnel_resetthisround += 1
+				if #tunnel_rainbow_pattern/2 < tunnel_resetthisround then
+						tunnel_resetbase += tunnel_resetthisround
+						tunnel_resetthisround = 0
+				end
+		end
 end
 
 function _draw()
@@ -46,33 +78,45 @@ function _draw()
 		local dt = demotime()
 
 		-- do your effect here
-		cls(0)
-		tmodsize_min = 3
-		tmodsize_max = 140
-		tmodsize_diff = tmodsize_max - tmodsize_min
-		tmodscale_max = 2.5
-		tmodsteps = 100
-		col_steps = 100
-		col_speed = 40
+		cls(1)
+		
+		local tmodsteps = 80 + (sin(st*0.2)*60)
 
 		for i = 0, tmodsteps do
 				mod = i / tmodsteps
 
 				thist = st - tmodscale_max * mod
-				tun_x = 75 + sin(thist) * 20 + cos(thist*0.2)*20
-				tun_y = 65 + cos(thist*0.4) * 30
+				tun_x = 75 + sin(thist) * 7 + cos(thist*0.2)*20
+				tun_y = 65 + cos(thist*0.4) * 15
 
-				col = ((#tunnel_rainbow_pattern*0.5 * mod))
-				col = tunnel_rainbow_pattern[1 + flr(col)]
+				col = 1 + flr(((#tunnel_rainbow_pattern*0.5 * (1 - mod))))
+				col += tunnel_currentcol - tunnel_resetbase
+				col = tunnel_rainbow_pattern[col]
 				
 				size = tmodsize_min + tmodsize_diff*mod
 				
+				-- make circles thicker the closer
+				-- they are to the screen
+				if 0.6 < mod then
 				circ(tun_x-1, tun_y-1, size, col)
+				end
+				if 0.4 < mod then
+				circ(tun_x-1, tun_y+1, size, col)
+				end
+				if 0.3 < mod then
 				circ(tun_x+1, tun_y+1, size, col)
+				end
+				if 0.2 < mod then
+				circ(tun_x+1, tun_y-1, size, col)
+				end
+				if i == 0 then
+				circfill(tun_x, tun_y, size, 14)
+				end
 				circ(tun_x, tun_y, size, col)
-		end		
+		end
 		
-		--[[cls(1)
+		--[[
+		cls(1)
 		local tmodsteps = 150
 		local tmodscale = 0.0001
 		local tcolspeed = 35
