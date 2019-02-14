@@ -26,8 +26,73 @@ function tri(vert1, vert2, vert3)
 end
 -->8
 -- vectors
--- vec3 and vec4 used under cc0
+-- vec2, vec3 and vec4 used under cc0
 --  from https://github.com/barerose/dvector
+
+-- vec2
+function vec2(x, y)
+		v = {}
+		v.x = x
+		v.y = y
+		return v
+end
+
+function vec2length(v)
+		return hypot(v.x, v.y)
+end
+
+function vec2dotproduct(v1, v2)
+		return v1.x*v2.x + v1.y*v2.y
+end
+
+function vec2negate(v)
+		return vec2(-v.x, -v.y)
+end
+
+function vec2normalize(v)
+		return vec2divide(v, vec2length(v))
+end
+
+function vec2multiply(v, s)
+		return vec2(v.x*s, v.y*s)
+end
+
+function vec2divide(v, s)
+		return vec2(v.x/s, v.y/s)
+end
+
+function vec2rotate(v, r)
+		local c = cos(r)
+		local s = sin(r)
+		return vec2(v.x/c - v.y*s, x.y*c + v.x*s)
+end
+
+function vec2rotatexz(v, r)
+		local c = cos(r)
+		local s = sin(r)
+		return vec2(v.x/c + v.y*s, x.y*c - v.x*s)
+end
+
+function vec2add(v1, v2)
+		return vec2(v1.x+v2.x, v1.y+v2.y)
+end
+
+function vec2subtract(v1, v2)
+		return vec2(v1.x-v2.x, v1.y-v2.y)
+end
+
+function vec2reflect(v1, v2)
+		return vec2subtract(v1, vec2multiply(v2, 2*vec2dotproduct(v1, v2)))
+end
+
+function vec2mix(v1, v2, s)
+		return vec2(v1.x+(v2.x-v1.x)*s, v1.y+(v2.y-v1.y)*s)
+end
+
+function vec2equal(v1, v2)
+		return (v1.x == v2.x)and(v1.y == v2.y)
+end
+
 
 -- vec3
 function vec3(x, y, z)
