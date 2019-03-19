@@ -57,7 +57,6 @@ func loadPNGImage(filename string) (*image.Image, error) {
 }
 
 func main() {
-	version := "0.0.1"
 	usage := `p8conv.
 Usage:
 	p8conv <filename-prefix>
@@ -67,7 +66,7 @@ Options:
 	-h --help          Show this screen.
 	--version          Show version.`
 
-	arguments, _ := docopt.ParseArgs(usage, nil, version)
+	arguments, _ := docopt.ParseDoc(usage)
 
 	fnPrefix := arguments["<filename-prefix>"].(string)
 
@@ -98,7 +97,7 @@ Options:
 	fmt.Println("\"")
 
 	// mask
-	maskImgFilePointer, err := loadPNGImage(fnPrefix + "-rendermask.png")
+	maskImgFilePointer, err := loadPNGImage(fnPrefix + "-mask.png")
 	if err != nil {
 		log.Fatalf("Failed to load mask img: %s\n", err.Error())
 	}
