@@ -4,7 +4,6 @@ __lua__
 -- l g bee t +
 -- made by pixienop~
 
-
 -- design thoughts
 -- instead of 'difficulty',
 --  'speed' settings like:
@@ -13,16 +12,239 @@ __lua__
 --  - 'intense (6)'
 --  etc :)
 
+-- game state
+state_tag = 0
+state_title = 1
+state_game = 2
+
+state = state_tag
+
+-- init
+function _init()
+		music(0)
+end
+
+-- update
+function _update()
+		if state == state_tag then
+				update_tag()
+		elseif state == state_title then
+				update_title()
+		elseif state == state_game then
+				update_game()
+		end
+end
+
+-- draw
+function _draw()
+		if state == state_tag then
+				draw_tag()
+		elseif state == state_title then
+				draw_title()
+		elseif state == state_game then
+				draw_game()
+		end
+end
+
+-->8
+-- shared data and functions
+
+-- scene time
+_st_time = 0
+
+function current_st()
+		return max(t() - _st_time, 0)
+end
+
+-- bee rings
 beecols = {12,10,11,8,14,2}
 
-music(0)
+-- bg
+stars = {}
+star_colours = {
+	 7, 7, 6, 6, 5,
+	 9, 10, 14, 13, 15,
+}
 
-function _draw()
+-- game speeds
+default_speed = 2
+speed = 2
+speeds = {
+		0.3,
+		0.6,
+		1.1,
+		1.8,
+}
+
+-- transitions
+transitioning_in = true
+transitioning_out = false
+t_start = 0
+
+function lstep(edge0, edge1, x)
+		return (edge0 * (1-x)) + (edge1 * x)
+end
+
+
+-->8
+-- tag
+function update_tag()
+		if 3.9 < t() then
+				state = state_title
+				_st_time = t()
+		end
+end
+
+function draw_tag()
+		cls(7)
+		
+		local st = current_st()
+		
+		pal(10,7)
+		pal(9,7)
+		pal(8,7)
+		
+		if 0.6 < st and st < 3.73 then
+				pal(10,8)
+		end
+		if 1.65 < st and st < 3.75 then
+				pal(9,2)
+		end
+		if 2.7 < st and st < 3.77 then
+				pal(8,1)
+		end
+		
+		spr(176, 26, 42, 9, 5)
+		
+		pal()
+end
+
+-->8
+-- title screen
+
+-- speed changing
+smooth_speed = 1
+speed_desc = {
+		"1 - chill",
+		"2 - balanced",
+		"3 - intense",
+		"4 - quite fast",
+}
+
+-- speed lerping
+speed_start = 2
+speed_end = 2
+s_time = -50
+s_duration = 0.4
+
+function update_title()
+		local cst = current_st()
+		
+		local sc = cst - s_time
+		if sc < s_duration then
+				local step = sc / s_duration
+				smooth_speed = lstep(speed_start, speed_end, step)
+		end
+		
+		if transitioning_in then
+				if 0.7 < cst then
+						transitioning_in = false
+				end
+				return
+		end
+		
+		if transitioning_out then
+				if 0.4 < cst - t_start then
+						state = state_game
+						transitioning_out = false
+						transitioning_in = true
+						_st_time = t()
+				end
+				return
+		end
+
+		if btnp(➡️) then
+				speed = min(speed+1, #speed_desc)
+				sfx(6)
+				
+				if true then--speed != smooth_speed then
+						speed_start = smooth_speed
+						speed_end = speeds[speed]
+						s_time = cst
+				end
+		elseif btnp(⬅️) then
+				speed = max(speed-1, 1)
+				sfx(7)
+				
+				if true then--speed != smooth_speed then
+						speed_start = smooth_speed
+						speed_end = speeds[speed]
+						s_time = cst
+				end
+		elseif btnp(❎) then
+				transitioning_out = true
+				t_start = cst
+		end
+end
+
+function draw_title()
 		cls(1)
 		
-		local st = t()
+		local st = current_st()
 		
-		local titletext = "l g bee t +"
+		-- moon?
+		circfill(100,30,10,15)
+		circfill(94,33,10,1)
+		
+		-- stars
+		while #stars < 20 do
+	   local star = {}
+	   star.x = 130 + flr(rnd() * 256)
+	   star.y = flr(rnd() * 128)
+	   star.colour = flr(rnd() * (#star_colours - 1)) + 1
+	   star.big = 0.95 < rnd()
+	   add(stars, star)
+		end
+		for i = 1, #stars, 1 do
+				local star = stars[i]
+				
+				star.x -= 8 * smooth_speed
+				if star.x < -5 then
+			   star.x = 130 + flr(rnd() * 256)
+			   star.y = flr(rnd() * 128)
+			   star.colour = flr(rnd() * (#star_colours - 1)) + 1
+			   star.big = 0.95 < rnd()
+				end
+				
+				if star.big then
+						circ(star.x, star.y, 1, star_colours[star.colour])
+				else
+						pset(star.x, star.y, star_colours[star.colour])
+				end
+		end
+		
+		-- sky
+  local skyy = 20
+  fillp(0b0101101001011010.1)
+  for x = 0, 127 do
+    local y = skyy + sin(st*0.2*smooth_speed+x*0.004)*4.8 + cos(st*0.023+x*0.03)*1.6
+    y += abs((x/127)-0.5) * 16
+    line(x, -1, x, y, 0xd)
+  end
+  fillp()
+
+		-- ground
+		local groundy = 110
+  fillp(0b0101101001011010)
+		for x = 0, 127 do
+				local y = groundy + sin(st*1.4*smooth_speed+x*.004)*7.8 + cos(st*1.4*smooth_speed+x*.012)*3.8
+				y += sin(st*20.4*smooth_speed+x*.73)*.8
+				line(x, y, x, 128, 0x42)
+		end
+		fillp()
+		
+		-- draw wiggly title
+		local titletext = "l-g-bee-t +"
 		local titlecols = {8,9,10,11,12,14}
 		
   col_index = -flr(st*6)  -- which colour from the pattern to draw
@@ -33,7 +255,7 @@ function _draw()
     letter = sub(titletext, i, i)   -- grab this letter
     this_st = st - (0.1* i)       -- create a modified time for this letter
     base_x = 10
-    print(letter, base_x + i*4, 12 + sin(this_st*2)*.9, titlecols[col_index])  -- draw this letter
+    print(letter, base_x + i*4, 42 + sin(this_st*2)*.9, titlecols[col_index])  -- draw this letter
     
     -- only go to the next colour
     -- for actual letters, ignore
@@ -49,33 +271,169 @@ function _draw()
     end
   end
 		
---		print(, 5, 5, 13)
-		
 		-- draw bee
 		local s = 12
-		if (0 < sin(st*4.9)) then
+		if (0 < sin(st*4.9*smooth_speed)) then
 				s = 14
 		end
 		
 		-- bee 1
 		pal(1,0)
 		for i = 1, #beecols do
-				pal(beecols[i], i+5+flr(st*10))
+				pal(beecols[i], i+5+flr(st*10*smooth_speed))
 		end
-		spr(s, 50+cos(st*.1)*30+cos(st*.34)*10, 50+sin(st*.3)*40.9, 2, 2)
+		spr(s, 50+cos(st*.1*smooth_speed)*30+cos(st*.34)*10, 50+sin(st*.3*smooth_speed)*40.9, 2, 2)
 		pal()
 
 		-- bee 2
 		pal(1,0)
 		for i = 1, #beecols do
-				if (i + flr(st*5)) % 2 == 0 then
+				if (i + flr(st*5*smooth_speed)) % 2 == 0 then
 						pal(beecols[i], 0)
 				else
 						pal(beecols[i], 10)
 				end
 		end
-		spr(s, 50+cos(st*.1+3.8)*34+cos(st*.34+2.5)*7, 50+sin(st*.3+2.66)*44.9, 2, 2)
+		spr(s, 50+cos(st*.1*smooth_speed+3.8)*34+cos(st*.34*smooth_speed+2.5)*7, 50+sin(st*.3*smooth_speed+2.66)*44.9, 2, 2)
 		pal()
+		
+		-- instructions
+		print("⬅️➡️ speed", 20,80, 0)
+		print("⬅️➡️ speed", 20,79, 7)
+		print(speed_desc[speed], 26,88, 1)
+		print(speed_desc[speed], 26,87, 7)
+		
+		print("❎🅾️ play", 20,67, 0)
+		print("❎🅾️ play", 20,66, 7)
+		
+		-- squiggly river mention~
+		local a = "               pride jam"
+		local b = "squiggly river"
+		for x = -1, 1 do
+				for y = -1, 1 do
+						print(a, 17+x, 121+y, 0)
+						print(b, 17+x, 121+y, 0)
+				end
+		end
+		--print(a, 16, 122, 0)
+		--print(b, 17, 122, 0)
+		print(a, 17, 121, 7)
+		print(b, 17, 121, 8)
+		line(16,127,128-16,127,3)
+		
+		-- transition in from tag
+		if transitioning_in then
+				for i = 0, 127 do
+						line(i, st*500*(st*0.88)+sin(i*0.02+st*3)*5.8-10, i, 128, 7)
+				end
+		end
+		
+		-- transition out
+		if transitioning_out then
+				for i = 0, 127 do
+						line(i, 140-(st-t_start)*300*(st*0.88)+sin(i*0.02+st*3)*5.8, i, 128, 7)
+				end
+		end
+end
+-->8
+-- game
+
+-- draw a basic flag
+function draw_flag(fx,fy,x,y)
+		rect(x,y,x+32,y+19,0)
+		sspr(fx,fy,31,18,x+1,y+1)
+end
+
+function update_game()
+		local cst = current_st()
+		
+		if transitioning_in then
+				if 0.7 < cst then
+						transitioning_in = false
+				end
+				return
+		end
+end
+
+function draw_game()
+		cls(1)
+
+		local st = current_st()
+		
+		-- moon?
+		circfill(100,30,10,15)
+		circfill(94,33,10,1)
+		
+		-- stars
+		while #stars < 20 do
+	   local star = {}
+	   star.x = 130 + flr(rnd() * 256)
+	   star.y = flr(rnd() * 128)
+	   star.colour = flr(rnd() * (#star_colours - 1)) + 1
+	   star.big = 0.95 < rnd()
+	   add(stars, star)
+		end
+		for i = 1, #stars, 1 do
+				local star = stars[i]
+				
+				star.x -= 8 * smooth_speed
+				if star.x < -5 then
+			   star.x = 130 + flr(rnd() * 256)
+			   star.y = flr(rnd() * 128)
+			   star.colour = flr(rnd() * (#star_colours - 1)) + 1
+			   star.big = 0.95 < rnd()
+				end
+				
+				if star.big then
+						circ(star.x, star.y, 1, star_colours[star.colour])
+				else
+						pset(star.x, star.y, star_colours[star.colour])
+				end
+		end
+		
+		-- sky
+  local skyy = 20
+  fillp(0b0101101001011010.1)
+  for x = 0, 127 do
+    local y = skyy + sin(st*0.2*smooth_speed+x*0.004)*4.8 + cos(st*0.023+x*0.03)*1.6
+    y += abs((x/127)-0.5) * 16
+    line(x, -1, x, y, 0xd)
+  end
+  fillp()
+
+		-- ground
+		local groundy = 110
+  fillp(0b0101101001011010)
+		for x = 0, 127 do
+				local y = groundy + sin(st*1.4*smooth_speed+x*.004)*7.8 + cos(st*1.4*smooth_speed+x*.012)*3.8
+				y += sin(st*20.4*smooth_speed+x*.73)*.8
+				line(x, y, x, 128, 0x42)
+		end
+		fillp()
+		
+		-- draw bee
+		local s = 12
+		if (0 < sin(st*4.9*smooth_speed)) then
+				s = 14
+		end
+		
+		-- bee 1
+		pal(1,0)
+		for i = 1, #beecols do
+				pal(beecols[i], i+5+flr(st*10*smooth_speed))
+		end
+		spr(s, 20+cos(st*.1*smooth_speed)*4.8+cos(st*.34)*2.9, 60+sin(st*.3*smooth_speed)*4.9, 2, 2)
+		pal()
+		
+		-- flags
+		draw_flag(0,16, 18,104)
+		
+		-- transition in
+		if transitioning_in then
+				for i = 0, 127 do
+						line(i, -1, i, 150 - st*450*(st*0.88)+sin(i*0.02+st*3)*5.8-10, 7)
+				end
+		end
 end
 __gfx__
 000000004ddd000000000000000000000000000088888880ccccccc0eeeeeee0888888880000000000000000000000004ddd0000000000000000000000000000
@@ -213,8 +571,8 @@ __sfx__
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010700000012218131241413c14130131241310010100105003020030200302003020030200302003020030200302003020030200302003020030200302003020030200302003020030200302003020030200302
+01070000001220c131181413014124131181310010100105001050010500105001050010500105001050010500105001050010500105001050010500105001050010500105001050010500105001050010500105
 010c00160c0300003000030000300c0300003000030000300c0300003000030000300c0300003000030000300f0300f0300f03011030110301103011000110000c00000000000000000000000000000000000000
 011000000c0530000000000000001c6550000000000000000c7530000000000000001c655000001f6251d6450c0530000000000000001c6550000000000000000c7530000000000000001c6551d6451d6351d625
 010c00160c0300003000030000300c0300003000030000300c0300003000030000300c0300003000030000300703007030070300a0300a0300a03007000070000a0000a000000000000000000000000000000000
