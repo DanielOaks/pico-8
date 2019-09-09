@@ -10,11 +10,11 @@ function _init()
 end
 
 function _update()
-
+		update_game()
 end
 
 function _draw()
-
+		draw_game()
 end
 -->8
 -- main game code
@@ -22,15 +22,18 @@ end
 -- static stuff
 
 pieces = {
-		{name='finesse', x=8,y=0, typ=1},
-		{name='power', x=16,y=0, typ=1},
-		{name='style', x=24,y=0, typ=1},
-		{name='skill', x=32,y=0, typ=1},
-		{name='focus', x=0,y=0, typ=2},
+		{name='finesse', s=2, typ=1},
+		{name='power', s=1, typ=1},
+		{name='style', s=3, typ=1},
+		{name='skill', s=4, typ=1},
+		{name='focus', s=0, typ=2},
 }
 
 board_height = 5
 board_width = 5
+group_length = 3
+
+-- game state
 
 -- x,y array of piece ids.
 --  0 is empty
@@ -39,21 +42,162 @@ board = {}
 game_cursor_on_board = true
 game_cursor = {1,1}
 
+collected_pieces = {}
+
+function new_piece()
+		-- lazy lol
+		return flr(rnd((#pieces)-1.1))+1
+end
+
 function game_init()
 		-- we're gonna make a random
 		--  game here because testlol
 		board = {}
 		
-		for x=1,16 do
+		for x=1,board_width do
 				board[x] = {}
-				for y=1,16 do
-						board[x][y] = 0
+				for y=1,board_height do
+						board[x][y] = new_piece()
+				end
+		end
+		
+		-- regenerate lines as needed
+		local board_ok = false
+		while not board_ok do
+				local ok_this_run = true
+				local ok_this_line = true
+				local this_id = 0
+				local same_id = 1
+				
+				for x=1,board_width do
+						this_id = 0
+						ok_this_line = true
+
+						for y=1, board_height do
+								if board[x][y] == this_id then
+										same_id += 1
+								else
+										same_id = 1
+								end
+								this_id = board[x][y]
+								
+								if group_length <= same_id then
+										-- line found
+										ok_this_line = false
+								end
+						end
+
+						if not ok_this_line then
+								for y=1, board_height do
+										board[x][y] = new_piece()
+								end
+								
+								ok_this_run = false
+						end
+				end
+
+				for y=1,board_width do
+						this_id = 0
+						ok_this_line = true
+
+						for x=1, board_width do
+								if board[x][y] == this_id then
+										same_id += 1
+								else
+										same_id = 1
+								end
+								this_id = board[x][y]
+								
+								if group_length <= same_id then
+										-- line found
+										ok_this_line = false
+								end
+						end
+
+						if not ok_this_line then
+								for x=1, board_width do
+										board[x][y] = new_piece()
+								end
+								
+								ok_this_run = false
+						end
+				end
+				
+				if ok_this_run then
+						board_ok = true
 				end
 		end
 end
 
 function start_game()
+		-- reset all state
+		game_cursor_on_board = true
+		game_cursor = {1,1}
+		
+		collected_pieces = {}
+end
 
+function update_game()
+		if game_cursor_on_board then
+				if btnp(➡️) then
+						game_cursor[1] += 1
+				elseif btnp(⬅️) then
+						game_cursor[1] -= 1
+				end
+				
+				if btnp(⬆️) then
+						game_cursor[2] -= 1
+				elseif btnp(⬇️) then
+						game_cursor[2] += 1
+				end
+				
+				if game_cursor[1] < 1 then
+						game_cursor[1] = board_width
+				elseif board_width < game_cursor[1] then
+						game_cursor[1] = 1
+				end
+				
+				if game_cursor[2] < 1 then
+						game_cursor[2] = board_height
+				elseif board_height < game_cursor[2] then
+						game_cursor[2] = 1
+				end
+		end
+end
+
+function draw_game()
+		cls(0)
+		local st = t()
+
+		for x=1,#board do
+				for y=1,#board[x] do
+						local piece = board[x][y]
+						
+						print(piece, 90+x*5, y*7)
+						
+						if piece != 0 then
+								local inf = pieces[piece]
+								spr(inf.s, x*12, y*12)
+						end
+				end
+		end
+		
+		if game_cursor_on_board then
+				pal(10,0)
+				pal(9,0)
+				pal(8,0)
+				if (st)%1>0.333 then
+						pal(10,7)
+				end
+				if (st+0.333)%1>0.333 then
+						pal(9,7)
+				end
+				if (st+0.666)%1>0.333 then
+						pal(8,7)
+				end
+				spr(16, game_cursor[1]*12-2, game_cursor[2]*12-2, 2,2)
+				pal()
+		end
 end
 
 __gfx__
