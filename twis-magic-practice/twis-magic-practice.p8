@@ -52,6 +52,40 @@ game_drag_cursor = {3,2}
 
 collected_pieces = {}
 
+in_falling_mode = false
+falling_pieces = {}
+
+function enter_falling_mode()
+		in_falling_mode = true
+
+		for x=1,#board do
+				local fallin = false
+				local new_needed = 0
+				for iy=1,board_height do
+						local y = board_height+1-iy
+						if board[x][y] == 0 then
+								fallin = true
+								new_needed += 1
+						end
+						
+						if fallin and board[x][y] != 0 then
+								local new_fp = {}
+								new_fp.id = board[x][y]
+								new_fp.x = x
+								new_fp.initial_y = y
+								new_fp.initial_time = t()
+								falling_pieces[x][#falling_pieces[x]+1] = new_fp
+								
+								board[x][y] = 0
+						end
+				end
+		end
+end
+
+function update_falling_mode()
+		-- do nothing
+end
+
 function new_piece()
 		-- lazy lol
 		return flr(rnd((#pieces)-.1))+1
@@ -157,6 +191,8 @@ function game_init()
 				for y=1,board_height do
 						board[x][y] = new_piece()
 				end
+				
+				falling_pieces[x] = {}
 		end
 		
 		-- regenerate lines as needed
@@ -238,6 +274,11 @@ function start_game()
 end
 
 function update_game()
+		if in_falling_mode then
+				update_falling_mode()
+				return
+		end
+
 		if game_cursor_on_board then
 				if btnp(🅾️) then
 						game_cursor_dragging = not game_cursor_dragging
@@ -258,7 +299,6 @@ function update_game()
 										for i=1,#matches do
 												local id = board[matches[i][1]][matches[i][2]]
 												new_board[matches[i][1]][matches[i][2]] = 0
-												printh('got item '..id)
 												if collected_pieces[id] == nil then
 														collected_pieces[id] = 1
 												else
@@ -266,6 +306,8 @@ function update_game()
 												end
 										end
 										board = new_board
+										
+										enter_falling_mode()
 								end
 						end
 				end
@@ -325,6 +367,17 @@ function draw_game()
 								local inf = pieces[piece]
 								spr(inf.s, x*12, board_offset_v+y*12)
 						end
+				end
+		end
+
+		for x=1,#falling_pieces do
+				for i=1,#falling_pieces[x] do
+						local inf = falling_pieces[x][i]
+
+						local moved = ((t()-inf.initial_time) * 9.9)
+						moved *= moved
+						moved *= 0.5
+						spr(pieces[inf.id].s, inf.x*12,board_offset_v+inf.initial_y*12 + moved)
 				end
 		end
 		
