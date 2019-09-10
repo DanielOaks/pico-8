@@ -19,8 +19,8 @@ function _draw()
 		draw_game()
 
 		pal(4,132,1)
-		pal(11,11,1)
 		pal(5,140,1)
+		pal(11,11,1)
 end
 -->8
 -- main game code
@@ -58,6 +58,96 @@ function new_piece()
 		return flr(rnd((#pieces)-.1))+1
 end
 
+function dupe_board(a)
+		local new_board = {}
+
+		for x=1,#board do
+				new_board[x] = {}
+				for y=1,#a[x] do
+						new_board[x][y] = a[x][y]
+				end
+		end
+
+		return new_board
+end
+
+function list_board_matches(oldx, oldy, newx, newy)
+		-- get this_board
+		local this_board = {}
+		if 0 < oldx and 0 < oldy and 0 < newx and 0 < newy then
+				-- do copy and replacement
+				this_board = dupe_board(board)
+				local new_id = board[newx][newy]
+				this_board[newx][newy] = board[oldx][oldy]
+				this_board[oldx][oldy] = new_id
+		else
+				this_board = board
+		end
+		
+		-- collect matches
+		local matches = {}
+		
+		for x=1,board_width do
+				local this_id = 0
+				local same_id = 1
+				local group_found = false
+				-- since p8 doesn't care about
+				--  invalid table accesses here
+				--  just doing this is fine
+				--  ♥♥♥
+				for y=1,board_height+1 do
+						if this_board[x][y] == this_id then
+								same_id += 1
+						else
+								if group_found then
+										group_found = false
+										if this_id != 0 then -- dont match empty
+												for i=1,same_id do
+														matches[#matches+1] = {x,y-i}
+												end
+										end
+								end
+								same_id = 1
+								this_id = this_board[x][y]
+						end
+								
+						if group_length <= same_id then
+								group_found = true
+						end
+				end
+		end
+		
+		for y=1,board_height do
+				local this_id = 0
+				local same_id = 1
+				local group_found = false
+				for x=1,board_width+1 do
+						if this_board[x] != nil and this_board[x][y] == this_id then
+								same_id += 1
+						else
+								if group_found then
+										group_found = false
+										if this_id != 0 then -- dont match empty
+												for i=1,same_id do
+														matches[#matches+1] = {x-i,y}
+												end
+										end
+								end
+								same_id = 1
+								if this_board[x] != nil then
+										this_id = this_board[x][y]
+								end
+						end
+								
+						if group_length <= same_id then
+								group_found = true
+						end
+				end
+		end
+		
+		return matches
+end
+
 function game_init()
 		-- we're gonna make a random
 		--  game here because testlol
@@ -79,6 +169,7 @@ function game_init()
 				local same_id = 1
 				
 				for x=1,board_width do
+						same_id = 1
 						this_id = 0
 						ok_this_line = true
 
@@ -87,8 +178,8 @@ function game_init()
 										same_id += 1
 								else
 										same_id = 1
+										this_id = board[x][y]
 								end
-								this_id = board[x][y]
 								
 								if group_length <= same_id then
 										-- line found
@@ -105,7 +196,8 @@ function game_init()
 						end
 				end
 
-				for y=1,board_width do
+				for y=1,board_height do
+						same_id = 1
 						this_id = 0
 						ok_this_line = true
 
@@ -114,8 +206,8 @@ function game_init()
 										same_id += 1
 								else
 										same_id = 1
+										this_id = board[x][y]
 								end
-								this_id = board[x][y]
 								
 								if group_length <= same_id then
 										-- line found
@@ -156,9 +248,26 @@ function update_game()
 						else
 								--todo: only allow changing
 								-- if item 'affects play'
-								local old_item = board[game_cursor[1]][game_cursor[2]]
-								board[game_cursor[1]][game_cursor[2]] = board[game_drag_cursor[1]][game_drag_cursor[2]]
-								board[game_drag_cursor[1]][game_drag_cursor[2]] = old_item
+								local matches = list_board_matches(game_drag_cursor[1], game_drag_cursor[2], game_cursor[1], game_cursor[2])
+								if 0 < #matches then
+										local old_item = board[game_cursor[1]][game_cursor[2]]
+										board[game_cursor[1]][game_cursor[2]] = board[game_drag_cursor[1]][game_drag_cursor[2]]
+										board[game_drag_cursor[1]][game_drag_cursor[2]] = old_item
+										
+										local new_board = dupe_board(board)
+										
+										for i=1,#matches do
+												local id = board[matches[i][1]][matches[i][2]]
+												new_board[matches[i][1]][matches[i][2]] = 0
+												printh('got item '..id)
+												if collected_pieces[id] == nil then
+														collected_pieces[id] = 1
+												else
+														collected_pieces[id] += 1
+												end
+										end
+										board = new_board
+								end
 						end
 				end
 				local old_game_cursor = {game_cursor[1],game_cursor[2]}
@@ -211,7 +320,7 @@ function draw_game()
 						if x == game_cursor[1] and y == game_cursor[2] then
 								c = 7
 						end
-						print(piece, 90+x*5, y*7, c)
+						print(piece, 100+x*4, 70+y*6, c)
 						
 						if piece != 0 then
 								local inf = pieces[piece]
@@ -259,6 +368,17 @@ function draw_game()
 		spr(8, 36,9)
 		pal()
 		
+		-- piece counts
+		rectfill(76,6,100,53,0)
+		for i=1,#pieces do
+				spr(pieces[i].s,78,9*i-1)
+				local c = 0
+				if collected_pieces[i] != nil then
+						c = collected_pieces[i]
+				end
+				print(c, 91,9*i+1, 7)
+		end
+		
 		-- twi
 		palt(0, false)
 		pal(15,12)
@@ -266,10 +386,10 @@ function draw_game()
 		if (st % 1) > 0.5 then
 				sp = 24
 		end
-		spr(sp, 100,76, 2,2)
+		spr(sp, 80,56, 2,2)
 		palt()
 		pal()
-		rect(99,75, 100+16,76+16, 13)
+		rect(79,55, 80+16,56+16, 13)
 		
 		-- celly
 		palt(0, false)
@@ -290,12 +410,12 @@ end
 
 __gfx__
 0999999000011000000002000030000000000000000600000077770000e000000000000000000000000000000000000000000000000000000000000000000000
-09000090001551000000220003b30000000200f0000060000e00007007000e000000000000770000000000000000000000000000000000000000000000000000
-00900900015c5510000e22000030003000020ff0000600000e0ee070000700700700007000077000000000000000000000000000000000000000000000000000
-000990000155c5100022e200000003b300ff277f077777700e0ee07000e000000770077000007700000000000000000000000000000000000000000000000000
-0009900001c5551002e22200000000300f772ff0070007070e00007000000e000077770000007700000000000000000000000000000000000000000000000000
-00900900015c5510022ee200000300000f7f0000070007700e077070070070000007700000077000000000000000000000000000000000000000000000000000
-09aaaa900015550000222200003b300000f00000007770000e00007000e000700000000000770000000000000000000000000000000000000000000000000000
+09000090001551000000220003b30000000200f0000060000e66667007000e000000000000770000000000000000000000000000000000000000000000000000
+00900900015c5510000e22000030003000020ff0000600000e6ee670000700700700007000077000000000000000000000000000000000000000000000000000
+000990000155c5100022e200000003b300ff277f077777700e6ee67000e000000770077000007700000000000000000000000000000000000000000000000000
+0009900001c5551002e22200000000300f772ff0077777070e66667000000e000077770000007700000000000000000000000000000000000000000000000000
+00900900015c5510022ee200000300000f7f0000077777700e677670070070000007700000077000000000000000000000000000000000000000000000000000
+09aaaa900015550000222200003b300000f00000007770000e66667000e000700000000000770000000000000000000000000000000000000000000000000000
 0999999000011000000220000003000000000000666666600077770000000e000000000000000000000000000000000000000000000000000000000000000000
 0098a98a98000000fff1111dfffffffffffcccc79a9ccffffffff551d0d55ffffff1111dffffffff000000000000000000000000000000000000000000000000
 0a00000000a00000fff1111ddfffddffffccccc77aac77ffff575551100511fffff1111ddfffddff000000000000000000000000000000000000000000000000
