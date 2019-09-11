@@ -55,9 +55,36 @@ collected_pieces = {}
 in_falling_mode = false
 falling_pieces = {}
 
-function enter_falling_mode()
-		in_falling_mode = true
+function collect_matches(matches)
+		local old_item = board[game_cursor[1]][game_cursor[2]]
+		board[game_cursor[1]][game_cursor[2]] = board[game_drag_cursor[1]][game_drag_cursor[2]]
+		board[game_drag_cursor[1]][game_drag_cursor[2]] = old_item
+		
+		local new_board = dupe_board(board)
+		
+		for i=1,#matches do
+				local id = board[matches[i][1]][matches[i][2]]
+				new_board[matches[i][1]][matches[i][2]] = 0
+				if collected_pieces[id] == nil then
+						collected_pieces[id] = 1
+				else
+						collected_pieces[id] += 1
+				end
+		end
+		board = new_board
+end
 
+function calc_y_of(position, initial_time)
+		local moved = 0
+		if initial_time != nil then
+				moved = ((t()-initial_time) * 9.9)
+				moved *= moved
+				moved *= 0.5
+		end
+		return board_offset_v+position*12 + moved
+end
+
+function enter_falling_mode()
 		for x=1,#board do
 				local fallin = false
 				local new_needed = 0
@@ -80,10 +107,72 @@ function enter_falling_mode()
 						end
 				end
 		end
+
+		in_falling_mode = true
 end
 
 function update_falling_mode()
-		-- do nothing
+		local num_falling_pieces = 0
+		for x=1,#falling_pieces do
+				num_falling_pieces += #falling_pieces[x]
+		end
+		if num_falling_pieces == 0 then
+				local matches = list_board_matches()
+				if 0 < #matches then
+						collect_matches(matches)
+						enter_falling_mode()
+				else
+						in_falling_mode = false
+				end
+				return
+		end
+
+		local stop_at = {}
+		for x=1,board_width do
+				stop_at[x] = calc_y_of(board_height+1)
+				for i=1,board_height do
+						local y = board_height+1-i
+						
+						if board[x][y] == 0 then
+								break
+						end
+						stop_at[x] = calc_y_of(y-1)
+				end
+		end
+		
+		local dead_fps = 0
+		for x=1,#falling_pieces do
+				for i=1,#falling_pieces[x] do
+						local fp = falling_pieces[x][i]
+						local fp_y = calc_y_of(fp.initial_y, fp.initial_time)
+						if stop_at[x] <= fp_y then
+								dead_fps += 1
+								fp.dead = true
+						end
+				end
+		end
+		if 0 < dead_fps then
+				local new_fps = {}
+				for x=1,board_width do
+						new_fps[x] = {}
+						for i=1,#falling_pieces[x] do
+								if falling_pieces[x][i].dead then
+										-- re-add to board
+										for j=1,board_height do
+												local y = board_height+1-j
+												
+												if board[x][y] == 0 then
+														board[x][y] = falling_pieces[x][i].id
+														break
+												end
+										end
+								else
+										new_fps[x][#new_fps[x]+1] = falling_pieces[x][i]
+								end
+						end
+				end
+				falling_pieces = new_fps
+		end
 end
 
 function new_piece()
@@ -107,7 +196,7 @@ end
 function list_board_matches(oldx, oldy, newx, newy)
 		-- get this_board
 		local this_board = {}
-		if 0 < oldx and 0 < oldy and 0 < newx and 0 < newy then
+		if oldx != nil and oldy != nil and newx != nil and newy != nil then
 				-- do copy and replacement
 				this_board = dupe_board(board)
 				local new_id = board[newx][newy]
@@ -290,23 +379,7 @@ function update_game()
 								-- if item 'affects play'
 								local matches = list_board_matches(game_drag_cursor[1], game_drag_cursor[2], game_cursor[1], game_cursor[2])
 								if 0 < #matches then
-										local old_item = board[game_cursor[1]][game_cursor[2]]
-										board[game_cursor[1]][game_cursor[2]] = board[game_drag_cursor[1]][game_drag_cursor[2]]
-										board[game_drag_cursor[1]][game_drag_cursor[2]] = old_item
-										
-										local new_board = dupe_board(board)
-										
-										for i=1,#matches do
-												local id = board[matches[i][1]][matches[i][2]]
-												new_board[matches[i][1]][matches[i][2]] = 0
-												if collected_pieces[id] == nil then
-														collected_pieces[id] = 1
-												else
-														collected_pieces[id] += 1
-												end
-										end
-										board = new_board
-										
+										collect_matches(matches)
 										enter_falling_mode()
 								end
 						end
@@ -374,10 +447,11 @@ function draw_game()
 				for i=1,#falling_pieces[x] do
 						local inf = falling_pieces[x][i]
 
-						local moved = ((t()-inf.initial_time) * 9.9)
-						moved *= moved
-						moved *= 0.5
-						spr(pieces[inf.id].s, inf.x*12,board_offset_v+inf.initial_y*12 + moved)
+						local y = calc_y_of(inf.initial_y, inf.initial_time)
+						if inf.dead then
+								rectfill(inf.x*12, y, inf.x*12+8, y+8, 8)
+						end
+						spr(pieces[inf.id].s, inf.x*12, y)
 				end
 		end
 		
@@ -458,6 +532,9 @@ function draw_game()
 		palt()
 		pal()
 		rect(79,95, 80+16,96+16, 1)
+		
+		-- cpu usage
+		print(stat(1),1,122,7)
 end
 
 __gfx__
