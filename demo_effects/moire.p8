@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 16
+version 18
 __lua__
 -- effect-specific info
 moire_cols = {
@@ -80,6 +80,9 @@ function _draw()
   				end
 				end
 		end
+		
+		print("pixienop ♥", 1, 120, 14)
+		print("pixienop ", 1, 120, 7)
 
 		-- end
 		if show_debug then
