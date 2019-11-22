@@ -1,13 +1,38 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
---<3
-pal(3,136,1)pal(4,143,1)pal(6,137,1)c={12,1,2,3,8,14,15,4,6,9,10,12,1,2,3,8,14,15,4,6,9,10}::w::st=t()/2
-cs=((1+t()*.9)%1)*(#c/2)
-for i=1,250 do st -= .001+sin(st/5)*.003
-cx=64+sin(st)*30
-cy=64+cos(st)*30
-circ(cx,cy,i/2,c[flr(#c/2+(i/250)*(#c/2)-cs)+1])end
+::w::
+cls(1)
+st=t()
+
+r=39.9 + sin(st*.4)*5
+k=flr(14+cos(st*.01)*12.9)
+d=0
+q=(.021+sin(st*.005)*.2)
+
+--circfill(64+sin(st*.3)*15, 64+cos(st*.7)*15, r, 1)
+for y=1,r*2 do
+	s=1-(abs(r-y)/r)s=sqrt(1-(1-s)*(1-s))
+	for i=1,k do
+		d+=1
+		local j=sin(st+(i/k)+y*q)
+		local l=cos(st+(i/k)+y*q)
+		color(i+1)
+		if l<0 then
+			color(5)
+		end
+		local xp=64+j*r*s+sin(st*.3)*15
+		local yp=y+64+cos(st*.7)*15-r
+		local oc=pget(xp,yp)
+		if oc==1 or oc==5 then
+			pset(xp,yp)
+		end
+	end
+end
+
+?d.." dots♥"
+?stat(1)
+
 flip()goto w
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
