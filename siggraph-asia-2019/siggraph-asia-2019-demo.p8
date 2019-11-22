@@ -1,0 +1,666 @@
+pico-8 cartridge // http://www.pico-8.com
+version 18
+__lua__
+-- rushpls
+-- made by pixienop
+-- at siggraph-asia-2019
+-- go brissie!
+replays=0
+current_scene = -2
+realscene_count = 0
+final_scene = 900 -- set during running
+
+continue_scene = 0
+
+scene_updated_this_pattern = false
+scene_just_entered = false
+rs_just_entered = false
+
+show_debug = false
+
+_demotime_start = 0
+_scenetime_start = 0
+
+function demotime()
+		return time() - _demotime_start
+end
+
+function scenetime()
+		return time() - _scenetime_start
+end
+
+scene_just_entered = true
+
+function demo_update()
+		if stat(20) < 5 then
+				if not scene_updated_this_pattern then
+						scene_updated_this_pattern = true
+						realscene_count += 1
+						rs_just_entered = true
+						
+						if 0 < continue_scene then
+								continue_scene -= 1
+						else
+  						scene_just_entered = true
+  						current_scene += 1
+  						if final_scene < current_scene then
+  								current_scene = 0
+  								continue_scene = 0 -- prevent overflows
+  								realscene_count = 0
+  								replays += 1
+  						end
+  						_scenetime_start = time()
+ 					end
+ 					
+ 					if current_scene == 0 then
+								_demotime_start = time()
+ 					end
+				end
+		else
+				scene_updated_this_pattern = false
+		end
+
+		if btnp(4) then
+				show_debug = not show_debug
+		end
+end
+-->8
+-- effect info
+rbd_speed=50
+rbd_w=14
+rbd_text="♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ ♥ "
+rbd_scenes=3
+old_rbdscene=0
+meltlo=9000 -- when to melt
+-->8
+-- runtime
+pnop_x = 28
+pnop_y = 42
+pnop_width = 9
+pnop_height = 5
+
+function _init()
+		-- start music
+		music(0)
+end
+
+function _update()
+		demo_update()
+end
+
+function _draw()
+		-- setup
+		local dt = demotime()
+		local st = scenetime()
+		for i=0,15 do
+			pal(i,i,1)
+		end
+
+		-- drawing
+		sc = -1
+		if current_scene == sc then
+				-- do nothing
+		end
+		
+		-- pixienop intro
+		sc += 1
+		if current_scene == sc then
+			clip(max(0,128-st*1200),0,min(128,5000-st*1200),128)
+			rectfill(0,0,127,127,0)
+ 		stc=st
+ 		spr(176, pnop_x, pnop_y, min(pnop_width*stc,pnop_width), pnop_height)
+ 		clip()
+ 		if 0<replays then
+	 		local c=8
+	 		for i=1,replays do
+	 			print("re",-7+i*8,120,c)
+	 			-- enjoy terrrible partycoding :)
+	 			if c==8 then
+	 				c=9
+	 			elseif c==9 then
+	 				c=10
+	 			elseif c==10 then
+	 				c=8
+	 			end
+	 		end
+	 		print("playing",1+replays*8,120,c)
+	 	end
+		end
+		
+		-- main
+		sc += 1
+		if current_scene == sc then
+			if scene_just_entered then
+				continue_scene=2
+			end
+			local fst=st*5
+			local finx=0
+			if st<.5 then
+				finx=min(200,max(0,200-fst*fst*80))
+			end
+			clip(finx,0,min(128,meltlo-st*1200),128)
+			
+			_pal={7,6,13,5,135,139,3,131,12,140,1,129,137,8,136,0}
+			for i,c in pairs(_pal) do
+		  pal(i-1,c,1)
+			end
+			c={0,1,2,3,4,5,6,7,8,9,10,11,4,12,13,14}
+			
+			xm=sin(st*.24)*7.9
+			ym=sin(st*.21)*7.9
+			rbd_w=min(-75+st*25,15+cos(st*.7)*5.9+sin(st*.4)+5.8)
+
+			for y=0,127 do
+				if (flr(y+st*rbd_speed)%3) == 0 then
+					rectfill(0,y,127,y+2,y+st*rbd_speed)
+				end
+			end
+			clip(finx,0,127,127)
+			if meltlo-st*1200 < 128 then
+				for i=0,80 do
+				x=rnd(128)
+				y=rnd(128)
+				pset(x,y,pget(x,y-1))
+				pset(x,128-y,pget(x,128-y-1))
+				end
+			end
+			clip(finx+rbd_w+xm,rbd_w+ym,127-rbd_w*2,127-rbd_w*2)
+			rectfill(0,0,127,127,11)
+			
+			-- do all your stuff here
+			scc=flr(st/6.5)
+			while rbd_scenes<=scc do
+				scc-=rbd_scenes
+			end
+			nst=st
+			if scc==0 then
+				mst=st*.34
+				for i=1,nst+1 do
+					cx=sin(mst*.4)*64+cos(mst)*12
+					cy=sin(mst*.35)*64+sin(mst*.8)*18
+					for i=1,#c do
+						mst-=.03
+						line(64+cx,64+cy,64+cx+sin(mst)*300,64+cy+cos(mst)*300,c[i])
+						if i%4==0 then
+							mst-=.12
+						end
+					end
+				end
+	
+				for i=1,#rbd_text do
+					print(sub(rbd_text,i,i),rbd_w+xm-10+sin(st)*4.9+i*4,rbd_w+ym+5+sin(st-i*.1)*1.9,st*(#rbd_text-i))
+				end
+			elseif scc==1 then
+				rectfill(0,0,127,127,-st-7)
+				for x=rbd_w+xm,128-rbd_w+xm do
+					for y=rbd_w+ym,128-rbd_w+ym,2 do
+						if flr(x+y)%3==0 then
+						else
+						pset(x,y,x+y-st*60+cos(x*.05)*3+sin(y*.02+st/3)*3.9)
+						end
+					end
+				end
+			elseif scc==2 then
+				rectfill(0,0,128,128,0)
+				tst=st/2
+				cs=((1+t()*.9)%1)*(#c/2)
+				for i=1,250 do
+					tst -= .001+sin(st/5)*.003
+					cx=64+sin(tst)*30
+					cy=64+cos(tst)*30
+					circ(cx,cy,i/2,c[flr(#c/2+(i/250)*(#c/2)-cs)+1])
+				end
+			end
+			
+			clip(finx,0,127,127)
+			
+			hi="pico-8!! @ siggraph-asia-2019"
+			local c=-sin(st/2)
+			for i=1,#hi do
+				local x=7+i*5+sin(st*.2)*50+cos(st*.43)*4+sin(st+i*.2)*1
+				local y=120+cos(st+i*.2)*1.9+2-abs(sin(st*.7))*5.9
+				print(sub(hi,i,i),x,y,c)
+			end
+			clip()
+		end
+		
+		-- tunnel
+		sc += 1
+		if current_scene == sc then
+			if scene_just_entered then
+				continue_scene=2
+				ttxtl=1
+			else
+				ttxtl+=3
+			end
+			pal(3,136,1)pal(4,143,1)pal(6,137,1)
+			c={12,1,2,3,8,14,15,4,6,9,10,12,1,2,3,8,14,15,4,6,9,10}
+			mst=st/2
+			cs=((1+st*.9)%1)*(#c/2)
+			ccx=0
+			ccy=0
+			for i=1,250 do
+				mst -= .001+sin(st/5)*.003
+				cx=64+sin(mst)*30
+				cy=64+cos(mst)*30
+				thisc=c[flr(#c/2+(i/250)*(#c/2)-cs)+1]
+				--[[if i==ttxtl then
+					for bx=-1,1 do
+						for by=-1,1 do
+							print("pixienop 2019",cx-30+bx,cy-1+by,0)
+						end
+					end
+					print("pixienop 2019",cx-30,cy-1,thisc)
+				end]]
+				circ(cx,cy,i/2,thisc)
+			end
+			rectfill(78-st*20,108,128,116,0)
+			line(77-st*20,109,77-st*20,115,0)
+			rectfill(298-st*30,117,128,122,0)
+			line(297-st*30,117,297-st*30,121,0)
+			local t="please enjoy this trashy demo"
+			if 0<replays then
+				t=t.." some more"
+			end
+			print(t,80-st*20,110,st+1)
+			local t="and this tunnel too! ;d"
+			print(t,300-st*30,116,st+2)
+		end
+
+		-- greetz
+		sc += 1
+		if current_scene == sc then
+			if scene_just_entered then
+				continue_scene=0
+				cls(7)
+			end
+			clip(0,max(0,300-st*1200),128,128)
+			rectfill(0,0,127,127,0)
+		 border = 2
+		 for y = 0, 13 do
+		  for x = 0, 12 do
+		   xmod = sin(y*0.17 + st*0.4)*7.8
+		   ymod = sin(x*0.07 + st*0.26)*4.8
+		
+		   midx = 128-(border + (x * 10) - 4*y) + xmod
+		   midy = (border + y * 10) + ymod
+		
+		   radius = (cos(x*0.2+st*0.2) * sin(st*0.5))*3.7
+		
+					if x==8 and y==9 then
+						color(14)
+					elseif flr(x)%2==0 and flr(y)%2==0 then
+						color(14)
+					else
+		   	color(10)
+		   end
+		   rectfill(midx-radius-1, midy-radius-1, midx+radius, midy+radius)
+		   if x==8 and y==9 then
+		   	color(8)
+					elseif flr(x)%2==0 and flr(y)%2==0 then
+			   color(2)
+			  else
+			  	color(9)
+			  end
+		   rectfill(midx-radius, midy-radius, midx+radius, midy+radius)
+		  end
+		 end
+		 t="greetz go out to:"
+		 for i=1,#t do
+		 	for j=0,3 do
+		 		clip(1+i*4+j,max(0,128-st*500),1,128)
+		 		local ix=1+i*4
+		 		local iy=60+sin(st+i*.05+j*.02)*2.9*(max(1,st*.4*(i*.3)))
+		 		line(ix+j,iy-2,ix+j,iy+6,0)
+			 	print(sub(t,i,i),ix,iy,7)
+			 end
+		 end
+		 clip()
+			print("mercury",128-st*20,30+sin(st)*4.9,st*6)
+			print("defame",140-st*30,90+cos(st*.7)*7.9,st*6+4)
+			print("zep",240-st*36,70+sin(st*.3)*23.9,st*6+8)
+			print("rzr1911",170-st*18,110+cos(st*.5)*5.9,st*6+13)
+			print("the deadliners",220-st*24,45+sin(st*.7)*2.9+cos(st*.3)*10.9,st*6+2)
+			print("elix",220-st*29,75+sin(st*.65)*4.9+cos(st*.1)*3.9,st*6+5)
+			print("jumalauta",130-st*35,110+sin(st*.36)*3.9,st*6+8)
+			print("gruber",330-st*35,76+sin(st*.36+.4)*3.9,st*6+10)
+			print("4mat",390-st*39,16+sin(st*.36+.4)*3.9,st*6+10)
+			print("aday",395-st*39,110+sin(st*.36+.4)*3.9,st*6+10)
+		end
+		
+		-- set the final scene num dynamically
+		-- so we don't need to stuff around so much
+		if scene_just_entered then
+				final_scene = sc
+		end
+		
+		camera(0,0)  -- always reset cam
+
+		-- print debug info
+		if show_debug then
+  		-- print scene time lol
+  		color(1)
+  		rectfill(103, 0, 128, 18)
+  		rectfill(0, 0, 40, 18)
+  		
+  		color(14)
+  		print("s:"..current_scene, 104, 1)
+  		print(st, 104, 1+6)
+  		print("c:"..continue_scene, 104, 1+12)
+
+  		color(7)
+  		print("cpu:" .. stat(1), 1, 1)
+  		print("    " .. stat(2), 1, 1+6)
+  		print("fps:" .. stat(7) .. "/" .. stat(8), 1, 1+6+6)
+  end
+		
+		-- unset scene_just_entered
+		if scene_just_entered then
+				scene_just_entered = false
+		end
+		if rs_just_entered then
+				rs_just_entered = false
+		end
+end
+__gfx__
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000a00000000000aa00000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000aa0000000000a000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000a0000000000a000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000aaaaaa000000000000000000000000a0000000000a000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000aa000000a00000000000000000000000aa000000000a000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000a00000000a000000000000000000000000a000000000a000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000a000000000a000000000000000000000000aa0000000aa000000000000000000000000000000000000000000000000000000000000000000000000000
+000000a0000000000a000008808800000000000000aa0000000a0000000000000000000000000000000000000000000000000000000000000000000000000000
+00000a00000000000a000080080080000000000000a0a000000a0000000000000000000000000000000000000000000000000000000000000000000000000000
+0000a000000000000a000080000080000000000000a0a000000a0000000000000000000000000000000000000000000000000000000000000000000000000000
+0000a000000000000a000080000080000000000000a00a00000a0000000000000000000000000000000000000000000000000000000000000000000000000000
+000a0a0000000000a0000008000080000000000000a00a00000a0000000000000000000000000000000000000000000000000000000000000000000000000000
+00a000a000000000a0000000800080000000000000a000a0000a0000000000000000000000000000000000000000000000000000000000000000000000000000
+00a0000a00000000a0000000080800000000000000aa00a0000a00000000000000aa000000000000000000000000000000000000000000000000000000000000
+000a000a0000000a000000000080000000000000000900a0000a00000a000000aa0aa00000000000000000000000000000000000000000000000000000000000
+00000000a00000a00000000000000000000a00000009000900aa0000a0a000aa00000a0000000000000000000000000000000000000000000000000000000000
+00000000900000a000000000000000000aa0a00000090009009a000a000a00a000000aa000000000000000000000000000000000000000000000000000000000
+000000000900090000000000000000000a00a000000900009099000a000aa0a0000000a000000000000000000000000000000000000000000000000000000000
+00000000090090000000000000000000a00a0000000900009099000a0000a00a00000aa000000000000000000000000000000000000000000000000000000000
+00000000009900000000000a000a000aa00a000000090000909900090000a00a00000a0000000000000000000000000000000000000000000000000000000000
+0000000000990000a000a00a000a000a0090000000090000999900900000a00a0000aa0000000000000000000000000000000000000000000000000000000000
+0000000009900000a000a0a0000a00090900000000090000099000900009900a000aa00000000000000000000000000000000000000000000000000000000000
+0000000000090000a0000aa0000990090000000800080000088000900009000a0aaa000000000000000000000000000000000000000000000000000000000000
+00000000000900000a00099000009009000000800008000000800080000900099900000000000000000000000000000000000000000000000000000000000000
+00000000000900000900099000009008000088000000000000800088008000090000000000000000000000000000000000000000000000000000000000000000
+00000000000080000900090900009000888800000000000000800008880000090000000000000000000000000000000000000000000000000000000000000000
+00000000000080000900090090008000000000000000000000800000000000080000000000000000000000000000000000000000000000000000000000000000
+00000000000080000800800099000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000
+00000000000008000080800008000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000
+00000000000008000080800000000000000000000aaa099908800888000000800000000000000000000000000000000000000000000000000000000000000000
+0000000000000800000000000000000000000000000a090900800808000000800000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000aaa090900800888000000800000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000a00090900800008000000800000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000aaa099908880888000008800000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000
+__label__
+ffffffffffff5ffffddfffffff66fffffffffffffffffffff7777fffffffffffffffff3ffffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffff5ffffdffffff666ffffffffffffffffff777f7fffffffffffffffffffff3ffffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffff5fffddfffff66ffffffffffffffff77777ffffffffffffffffffffffffff3ffffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffff5ffddffff666fffffffffffff77777ffffffffffffffffffffffffffffffff3fffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffff5ffdffff66fffffffffff77777fffffffffffffffffffffffffffffffffffff3fffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffff5fddff666fffffffff7777ffffffffffffffffffffffffffffffffffffffffff3fffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+3fffff5fdff66fffffff77777fffffffffffffffffffffffffffffffffffffffffffffff3ffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+3ffff5ddf66ffff77777ffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+f3ff5d666f77777fffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fff5d67777ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+c1f67ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33fffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33fffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33fffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33fffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3ffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3ffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3ffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3ffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3fffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3fffffffffffffffffffffffffffffffffffffffffff
+cfffffffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3fffffffffffffffffffffffffffffffffffffffffff
+fccfffffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3fffffffffffffffffffffffffffffffffffffffffff
+fffccfffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3ffffffffffffffffffffffffffffffffffffffffff
+fffffccffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3ffffffffffffffffffffffffffffffffffffffffff
+fffffffccffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ff3ffffffffffffffffffffffffffffffffffffffffff
+fffffffffcccffffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fff3fffffffffffffffffffffffffffffffffffffffff
+ffffffffffffccffffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fff3fffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffccfffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fff3fffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffccfffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fff3fffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffccfff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffccff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffcccfffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffccfffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffff8fccfffffffffffffffffffffffffffffffffffffffffffffffffffff3fffff3fffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffff8fffccfffffffffffffffffffffffffffffffffffffffffffffffffff3fffff3fffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffff8ffffccfffffffffffffffffffffffffffffffffffffffffffffffff3fffff3fffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffff8ffffffcccffffffffffffffffffffffffffffffffffffffffffffff3ffffff3ffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffff8ffffffffccffffffffffffffffffffffffffffffffffffffffffff3ffffff3ffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffff8ffffffffffccffffffffffffffffffffffffffffffffffffffffff3ffffff3ffffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffff8ffffffffffffccffffffffffffffffffffffffffffffffffffffff3fffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffff8fffffffffffffccffffffffffffffffffffffffffffffffffffff3fffffff3fffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffff8fffffffffffffffccffffffffffffffffffffffffffffffffffff3fffffff3fffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffffff8ffffffffffffffffcccfffffffffffffffffffffffffffffffff3fffffff3fffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffffff8fffffffffffffffffffccfffffffffffffffffffffffffffffff3fffffff3fffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffffff8fffffffffffffffffffffccfffffffffffffffffffffffffffff3ffffffff3ffffffffffffffffffffffffffffffffffff
+fffffffffffffffffffffffffffffffffffffffffffffffffffffccfffffffffffffffffffffffffff3ffffffff3ffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffff8ffffffffffffffffffffffffccfffffffffffffffffffffffff3ffffffff3fffffffffffffffffffffffffffffffff555
+fffffffffffffffffffffffffffffff8fffffffffffffffffffffffffcccffffffffffffffffffffff3ffffffff3fffffffffffffffffffffffffffff5555fff
+fffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffccffffffffffffffffffff3fffffffff3fffffffffffffffffffffffff555fffffff
+ffffffffffffffffffffffffffffffff8fffffffffffffffffffffffffffffccffffffffffffffffff3fffffffff3fffffffffffffffffffff5555ffffffffff
+ffffffffffffffffffffffffffffffff8fffffffffffffffffffffffffffffffccffffffffffffffff3fffffffff3fffffffffffffffff5555ffffffffffffff
+ffffffffffffffffffffffffffffffff8fffffffffffffffffffffffffffffffffccffffffffffffff3ffffffffff3fffffffffffff555ffffffffffffffffff
+fffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffffffffccffffffffffff3ffffffffff3fffffffff5555fffffffffffffffffffff
+fffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffffffffffcccfffffffff3ffffffffff3fffff5555fffffffffffffffffffffffff
+1111111111111fffffffffffffffffffff8ffffffffffffffffffffffffffffffffffffffccfffffff3ffffffffff3f5555fffffffffffffffffffffffffffff
+fffffffffffff11111111111111111111f8ffffffffffffffffffffffffffffffffffffffffccfffff3fffffffff555ffffffffffffffffffffddddddddddddd
+fffffffffffffffffffffffffffffffff11111111111111111111ffffffffffffffffffffffffccfffffffff5555ff3fffffffdddddddddddddfffffffffffff
+ccfffffffffffffffffffffffffffffffff8fffffffffffffffff11111111111111111111fffffffcfff5555fdddddddddddddffffffffffffffffffffffffff
+ffcccccffffffffffffffffffffffffffff8fffffffffffffffffffffffffffffffffffff111111ffff5dddddfffff3fffffffffffffffffffffffffffffffff
+fffffffccccccfffffffffffffffffffffff8fffffffffffffffffffffffffffffffffffffffffffffff777666666666fffffffffffffffffffffffffffffff5
+fffffffffffffccccccfffffffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffff7777ffff366666666fffffffffffffffffffff55f
+fffffffffffffffffffcccccffffffffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffff777f3ffffffff666666666ffffffffff55fff
+ffffffffffffffffffffffffccccccfffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffff777ffffffffffffffff6666666665fffff
+ffffffffffffffffffffffffffffffcccccff8fffffffffffffffffffffffffffffffffffffffffff8ffffffffffffff3777ffffffffffffffffffff55666666
+fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8ffffffffffffff3fff777fffffffffffffff55ffffffff
+ffffffffffffffffffffffffffffffffffffff8ffcccccfffffffffffffffffffffffffffffffffff8ffffffffffffff3ffffff7777fffffffff55ffffffffff
+ffffffffffffffffffffffffffffffffffffff8fffffffccccccfffffffffffffffffffffffffffff8fffffffffffffff3fffffffff777ffff55fffffffffddd
+fffffffffffffffffffffffffffffffffffffff8ffffffffffffccccccfffffffffffffffffffffff8fffffffffffffff3ffffffffffff7775ffffffffdddfff
+fffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffcccccffffffffffffffffff8fffffffffffffff3fffffffffffff55777fffdddffffff
+ffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffccccccffffffffffff8fffffffffffffff3fffffffffff55fffff777fffffffff
+ffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffcccccfffffff8ffffffffffffffff3ffffffff55ffffdddfff7777fffff
+fffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffffffcfccfcf8ffffffffffffffff3fffffff5fffdddffffffffff77766
+fffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffffffffffff8ccfccffffffffffffffffff55fdddffffffff6666666f77
+fffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffffffffffff8fffffcccccfffffffffff55dddfff66666666ffffffffff
+ffffffffffffffffffffffffffffffffffffffffff8fffffffffffffffffffffffffffffffffffff8ffffffffffccccccfff55dd666666ffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffff8fffffffffffffffffffffffffffffffffffff8ffffffffffffffff1ffd66777777fffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8fffffffffff1111fffffffffffff7777777777777777777
+fffffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffffffffff8ffffff11111fffffff8ffffffffffffffffffffffffffff
+fffffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffffffffff8f1f111ffffffffffff8ffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffffffff11181ffffffffffffffffffffffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffffffffff11f1ff8ffffffffffffffffffff8fffffffffffffffffffffffffff
+fffffffffffffffffffffffffffffffffffffffffffff8ffffffffffffffffffffff11f11ffffff8ffffffffffffffffffff8fffffffffffffffffffffffffff
+fffffffffffffffffffffffffffffffffffffffffffff8fffffffffffffffff11111fffffffffff8ffffffffffffffffffff8fffffffffffffffffffffffffff
+fffffffffffffffffffffffffffffffffffffffffffff8ffffffffffff11111ffffffffffffffff8ffffffffffffffffffff8fffffffffffffffffffffffffff
+ffffffffffffffffffffffffffffffffffffffffffffff8ffffff11111fffffffffffffffffffff8ffffffffffffffffffff8fffffffffffffffffffffffffff
+ff777ffffffffffffffff777ffff7fffffffffffffffff8f1111177ffffffffffffffff777fff777ffffffffffffffff777f8ff77ffffffffffffffff777ffff
+fff7fffffffffffffffff7f7ffff7ffffffffffffff11111ffff7ffffffffffffffffff7f7fff7f7ffffffffffffffff7f7ff87ffffffffffffffffffff7ffff
+fff7fffffffffffffffff777ffff7fffffffff11111ffff8ffff777ffffffffffffffff77ffff777ffffffffffffffff777ff8777ffffffffffffffff777ffff
+fff7fffff77ffffffffff7f7fffffffff17111ffff7fffff8fffff7fff777ffffff77ff7f7fff7f7fff777ffffffffff7f7ff8ff7fff777ffffffffff7ffffff
+ff777fff7ffff77ffffff777ffff71111f7ffffff7f7ffff8fff77fffff7fff77f7ffff7f7fff787fff7f7f7f7ffffff7f7ff877fffff7ff777ffffff777ffff
+ffffffff7fff7f7f777fffff1111ffffff7ffffff7f7ffff8ffffffffff7ff7fff7fffffffffff8ffff777f7f7f777fffffff8fffffff7ff7f7f777fffffffff
+ffffffff7fff7f7ffff11111fffffffffffffffff7fffffff8fffffffff7ff7fff7f7fffffffff8ffff7fff777fffffffffff8fffffff7ff777fffffffffffff
+fffffffff77f7f71111fffffffffffffff7fffffff77fffff8ffffffff777f7f7f777fffffffff8ffff7fff7f7fffffffffff8ffffff777f7f7fffffffffffff
+fffffffff11177ffffffffffffffffffffffffffffffffffff8fffffffffff777fffffffffffff8ffffffff7f7fffffffffff8ffffffffff7f7fffffffffffff
+ffff11111fffffffffffffffffffffffffffffffffffffffff8fffffffffffffffffffffffffff8fffffffffffffffffffffff8fffffffffffffffffffffffff
+
+__sfx__
+010200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010c00000c050187150c050187150c050187150c050187150e0501a7250e0501a7250e0501a7250e0501a725100501c735100501c735100501c735100501c7351105035735110502d742110502f7521105018752
+010c0000056450562505625056150564505625056250561505645056250562505615056450562505625056151164505625056250561511645056250562505615116450562505625056151d645056250562505615
+01180000105530050002500105530250000500105531a50510553185001a505105531a50311505105531d50500500005000050000500005000050000500005000050000500005000050000500005000050000500
+010c00000035000350303402b3302d320293301834018300243402833029320263302434524335243202633000350023502d3402d3302b3252b3302932000000183401a340183461a3401d340243411d34024340
+01180000106530060002600106530260000600106531a60510653186001a605106531a60311605106531d60500600006000060000600006000060000600006000060000600006000060000600006000060000600
+010c00000c050000000c050000000c050000000c050000000e050000000e050000000e050000000e05000000100500e031100500e031100501103110050130311105518431110502644111050294511105030461
+010c0000056550564505635056250565505645056350562505655056450563505625056550564505635056251165505645056250563511655056450563505625116550564505625056551d635056450565505625
+010c00000435004350323402d3302f3202b3301a34018300263402a3302b320283302634526335263202833004350023502d3402d3302b3252b33002350003501a3401c3401a3461c3401f340263411f34026340
+010c00000425004250323402d2322f1202b2301a3401810026240263422b220281302624026332262202813004250022502d2402d1302b2212b33202250002501a2401c3401a2401c1421f240261421f24026341
+010c00000e3100e3000e310023000e310023000e31002300103200230010320023001032002300103200230012330103001233010300123301330012330153001334013345133411334515341153451734117345
+010c00000c3361032613316103360c3361032613316103360c3361032613316103360c3361032613316103360c3361132615316113360c3361132615316113360c3361032613316103360c336103261331610336
+010c00000b3361032613316103360b33610326133160b336093361032613316093361033613326093161033610336133261731613336103361332617316133360e3361132617316113360e336113261731611336
+010c00000c005000050c0251302515025110250c0250c0050c02510025110250e0250c0250c0250c0250e0250c0050e00515025150251302513025110250c0050c0250e0250c0250e025110250c025110250c025
+010c00001c005040051a02521025230251f0251a025180051a0251e0251f0251c0251a0251a0251a0251c0251c0051a00521025210251f0251f0251a005180051a0251c0251a0251c0251f0251a0251f0251a025
+010c00001c0051c0051a02521025230251f0251a025180051a0251a0251f0251c0251a0251a0251a0251c0251c0051a00521025210251f0251f0251a005180051a0251c0251a0251c0251f0251a0251f0251a025
+010c00003053030721305213071130512307123051130711377303752137721375113771137511377113751135530357213552135711375303772137511357303273032521327223251134731345223472234511
+010c000018210182111821118211182121821218211182111f2101f2111f2111f2111f2111f2111f2111f2111d2101d2111d2111d2111f2101f2111f2111d2101a2101a2111a2121a2111c2111c2121c2121c211
+010c0000305303072130521307113051230712305113071134730345213472134512347123451134711345113b5303b7213b5223b711395303972139512347303273032521327213251130730305213072230512
+010c000018210182111821118211182121821218211182111c2101c2111c2111c2121c2121c2111c2111c211232102321123212232112121021211212121c2101a2101a2111a2111a21118210182111821218212
+__music__
+00 00424344
+01 0a0b4344
+00 0a0d0c15
+00 0a0d0c15
+00 0e0d4c44
+00 0f0d1016
+00 0f0d1117
+00 120f4344
+00 19130b18
+00 1b140b1a
+02 09424344
+02 49424344
+
