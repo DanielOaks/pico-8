@@ -4,7 +4,7 @@ __lua__
 -- peace and tranquility tunnel
 -- shoutout to g4b~
 tun2loadcols={0,5,6,5}
-tun2cols={8,9,10,11,12,13,2,14}
+tun2cols={8,9,138,139,12,13,141,14}
 
 function tunneldist(x1,y1,x2,y2)
 	return sqrt((x1-x2)^2+(y1-y2)^2)
