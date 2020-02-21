@@ -1,17 +1,24 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
-_p={9,137,136,2,141,12,140,1,129,131,3,139,11,138,10,135}for i,c in pairs(_p) do
-pal(i-1,c,1)end
-cm=0::w::cm+=1cls(8)st=t()
-for b=0,2 do
-for i=1,190 do
-x=b*30
-j=x+i
-k=40+b*40-20+sin(i*.02+st*.2)*(3+b*5)
-w=i*(.2+cos(t()/10+b*.1)*.1)
-circfill(j,k,w,i*cos(st*.05)+cm)pset(j-w*.7,k-w*.7,cm)end
+cols={0,5,6,7,10}
+cols={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}
+
+::w::
+
+cls(1)
+
+for x=0,127 do
+	uvx=(x-63.5)/63.5
+	for y=90,128 do
+		uvy=((y+.5)-63.5)/63.5
+		uv=uvx*(1-uvy)
+		pset(x,y,cols[min(#cols,flr(abs(uv*(#cols+1))))])
+	end	
 end
+
+print(stat(1),1,1)
+
 flip()goto w
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

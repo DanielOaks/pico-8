@@ -3,15 +3,30 @@ version 18
 __lua__
 _p={9,137,136,2,141,12,140,1,129,131,3,139,11,138,10,135}for i,c in pairs(_p) do
 pal(i-1,c,1)end
-cm=0::w::cm+=1cls(8)st=t()
-for b=0,2 do
-for i=1,190 do
-x=b*30
-j=x+i
-k=40+b*40-20+sin(i*.02+st*.2)*(3+b*5)
-w=i*(.2+cos(t()/10+b*.1)*.1)
-circfill(j,k,w,i*cos(st*.05)+cm)pset(j-w*.7,k-w*.7,cm)end
+
+::w::
+
+r=19.9
+st=t()
+
+for d=0,76 do
+	xm=64-sin(st-d*.02)*5
+	if d==0 then
+		circfill(xm,64,r+5,8)
+	end
+	for i=0,1,0.05 do
+		p=sin(i-d*.004)*sin(d*.02-i-st)
+	
+		nx=xm+sin(i)*(r+d-p*5*(1+d/50))+sin(d*.02+i+st)*4
+		ny=64+cos(i)*(r+d+p*3*(1+d/50))+cos(d*.01+i+st)*4
+		if i!=0 then
+			line(x,y,nx,ny,p*8)
+		end
+		x,y=nx,ny
+	end
 end
+
+--print(stat(1),1,1,7)
 flip()goto w
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

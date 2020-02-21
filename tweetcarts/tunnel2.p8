@@ -4,7 +4,7 @@ __lua__
 -- peace and tranquility tunnel
 -- shoutout to g4b~
 tun2loadcols={0,5,6,5}
-tun2cols={8,9,10,11,12,13,2,14}
+tun2cols={8,9,138,139,12,13,141,14}
 
 function tunneldist(x1,y1,x2,y2)
 	return sqrt((x1-x2)^2+(y1-y2)^2)
@@ -65,8 +65,8 @@ for i=1,min(et*8,#txt) do
 	print(sub(txt,i,i), 13+(i-1)*5+sin(tt/5)*10.9, 110+sin(tt)*3.9, cc)
 end
 
---rectfill(1,1,30,5,1)
---print(stat(1),1,1,13)
+rectfill(1,1,30,5,1)
+print(stat(1),1,1,13)
 
 for i=0,15 do
 	pal(i,tun2cols[1+flr((i/2+st*20)%8)],1)

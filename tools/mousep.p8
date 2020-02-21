@@ -1,18 +1,33 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
-_p={9,137,136,2,141,12,140,1,129,131,3,139,11,138,10,135}for i,c in pairs(_p) do
-pal(i-1,c,1)end
-cm=0::w::cm+=1cls(8)st=t()
-for b=0,2 do
-for i=1,190 do
-x=b*30
-j=x+i
-k=40+b*40-20+sin(i*.02+st*.2)*(3+b*5)
-w=i*(.2+cos(t()/10+b*.1)*.1)
-circfill(j,k,w,i*cos(st*.05)+cm)pset(j-w*.7,k-w*.7,cm)end
+_mousep_last=false
+_mousep_new=false
+
+function mousep()
+	if _mousep_last==false and 0<stat(34) then
+		return true
+	end
+	return false
 end
-flip()goto w
+
+function _init()
+	-- enable mouse
+	poke(0x5f2d,1)
+end
+
+function _update()
+	-- update mouse info
+	_mousep_last = _mousep_new
+	_mousep_new = 0<stat(34)
+end
+
+function _draw()
+	cls()
+	if mousep() then
+		cls(1)
+	end
+end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
