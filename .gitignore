@@ -71,3 +71,6 @@ $RECYCLE.BIN/
 /demos
 *.bin/
 *.p8l
+*.html
+*.js
+*.zip
