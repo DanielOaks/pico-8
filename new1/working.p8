@@ -348,7 +348,7 @@ function _draw()
 			ymid = -10
 			for i=0,6 do
 				for x=0,127 do
-					y = ymid+i*15+sin(et*.25+i*.2+x*.01)*9.9+cos(et/2+x*.02)*3.9
+					y = ymid+i*15+sin(et*.25*et*.1+i*.2+x*.01)*9.9+cos(et/2+x*.02)*3.9
 					line(x,y-bigr*2,x,y+bigr*2,7)
 				end
 			end
@@ -380,7 +380,7 @@ function _draw()
 
 					-- reflect
 					for ry=0,flr(tsize*2) do
-						dothis=0.5<sin(y*.2+x*.1+st+ry*.2)
+						dothis=0.6<sin(y*.2+x*.1+st+ry*.2)
 						if dothis then
 							rw = (flr(tsize*2)-ry)/2
 							rx=bx+cos(y*.1+x*.03+st+ry*4.35)*rw
