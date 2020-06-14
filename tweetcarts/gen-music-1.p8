@@ -8,8 +8,7 @@ p={{18,24},{54,2,7},{54,54,6}}for i,l in pairs(p) do
 for j,k in pairs(l) do
 poke(0x3100+i*4+j-1,k)end
 end
-music(1)::w::p=stat(24)cls()fillp(t()*10)rectfill(0,0,127,127,p)fillp()print(p,64+sin(t())*8,t(),p+6)
-flip()goto w
+music(1)::w::p=stat(24)cls()fillp(t()*10)rectfill(0,0,127,127,p+1)fillp()print(p,64+sin(t())*8,t(),p+6)flip()goto w
 
 --[[function debug_music(y,mode)
   if mode == nil then mode = 0 end
