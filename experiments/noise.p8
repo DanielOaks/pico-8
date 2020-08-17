@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 16
+version 29
 __lua__
 -- messy perlin noise thing
 seed = 82.4
@@ -91,6 +91,7 @@ function _init()
   
   music(0)
   cls()
+  print("flashing colours", 1,1, 7)
   
   -- primary game loop
   -- just generate the initial image
