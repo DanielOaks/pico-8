@@ -2,38 +2,41 @@ pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
 function _draw()
-	r=t()
+	st=t()
 
 	-- black bg
 	--cls(0)
-	srand(r)
+	srand(st)
+	
+	if min(9.9, st/5) < rnd() then
 	fillp(rnd(0b1111111111111111))
 	rectfill(0,0,127,127,0)
 	fillp()
+	end
 	
 	-- paralax stars
 	srand()
 	for i=0,120 do
-		x = (rnd(400)-r*50) % 400
+		x = (rnd(400)-st*50) % 400
 		y = rnd(128)
 		pset(x,y,5)
 	end
 	for i=0,100 do
-		x = (rnd(500)-r*100) % 500
+		x = (rnd(500)-st*100) % 500
 		y = rnd(128)
 		pset(x,y,6)
 	end
 	for i=0,140 do
-		x = (rnd(1000)-r*270) % 1000
+		x = (rnd(1000)-st*270) % 1000
 		y = rnd(128)
 		pset(x,y,7)
 	end
 	
 	-- ship
-	x = 25+sin(r/4)*5
-	y = 64+sin(r/3)*20+cos(r/2)*8
-	ovalfill(x-3+max(-1,min(1,sin(r*3)+cos(r*1.5))),y-3,x+3,y+2,12)
-	ovalfill(x+sin(r*3+r*1.4),y-1,x+1,y,7)
+	x = 25+sin(st/4)*5
+	y = 64+sin(st/3)*20+cos(st/2)*8
+	ovalfill(x-3+max(-1,min(1,sin(st*3)+cos(st*1.5))),y-3,x+3,y+2,12)
+	ovalfill(x+sin(st*3+st*1.4),y-1,x+1,y,7)
 	spr(1,x,y-8,2,2)
 end
 __gfx__

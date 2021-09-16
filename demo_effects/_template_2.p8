@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 18
+version 29
 __lua__
 -- demo template
 -- pixienop
@@ -117,7 +117,7 @@ function _init()
 		music(0)
 end
 
-function _update()
+function _update60()
 		demo_update()
 end
 
