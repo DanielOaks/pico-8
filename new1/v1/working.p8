@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 33
 __lua__
--- next1/wip
+-- arcus trigoni
 -- pixienop
 replays=0
 current_scene = -2
