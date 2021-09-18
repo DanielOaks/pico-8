@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 29
+version 33
 __lua__
 -- next1/wip
 -- pixienop
@@ -224,6 +224,10 @@ function _draw()
 		sc = -1
 		if current_scene == sc then
 				-- do nothing
+				srand(et)
+				for x=1,8000 do
+					pset(rnd(128),rnd(128),0)
+				end
 		end
 		
 		-- intro
@@ -246,8 +250,10 @@ function _draw()
 			elseif flr(et)==18 then
 				poke(0x5f41,2)
 			elseif continue_scene==5 then
+				if 25 < et then
 				poke(0x5f41,1)
 				poke(0x5f42,1)
+				end
 			end
 
 			cls()
@@ -324,6 +330,10 @@ function _draw()
 								elseif colo==5 and r1-10<i11 then
 									color(0)
 								end
+								fet=et\1
+								if colo==7 and (fet==33 or fet>35 and fet<41) or fet== 44 or fet>45 then
+									color(et*16+x+y*15+x)
+								end
 								line(i11,i12,i21,i22)
 								line(i11,i12,i31,i32)
 								line(i31,i32,i21,i22)
@@ -382,7 +392,22 @@ function _draw()
 			
 			twst=st+st*(st/3)
 			
-			cls(0)
+			--cls(0)
+			srand(et)
+			for x=1,1700 do
+				circfill(rnd(128),rnd(80),1,0)
+			end
+			
+			-- 'stars'
+			srand(2+et\1)
+			for i=0,240 do
+				size = rnd(2)+1
+				sc=6
+				if rnd()<.06 then
+					sc=rnd(15)+1
+				end
+				circ((rnd(200)-rnd(12)*et-twst*size)%200-2,rnd(80)+sin(rnd()*et/8),size-1,sc)
+			end
 			
 			-- lines
 			bigr = 1 + max(0,2*(.5-et%2))
@@ -464,17 +489,17 @@ function _draw()
 			et=max(0,tst-4.5)
 			redraw_y=(tst*105)%128
 			
-			for y=redraw_y,redraw_y+4 do
+			for y=redraw_y,redraw_y+5 do
 				for x=0,127 do
-					mx=x+sin(y/60)*sin(et/60)*10
-					my=y+cos(x/28)*sin(et/60)*10
+					mx=x+sin(y/60)*sin(et/60)*20
+					my=y+cos(x/28)*sin(et/60)*20
 					pset(x,y,tun2(mx,my,tuncx,tuncy))
 				end
 			end			
 
 			txt= "   code/gfx: pixienop"
 			if continue_scene < 2 then
-				txt="music: pixienop + gruber♥"
+				txt="music: gruber♥ + pixienop"
 			end
 			tt=tst
 			cc=-tst*40+2
@@ -493,42 +518,129 @@ function _draw()
 		if current_scene == sc then
 			if scene_just_entered then
 				continue_scene=0
+				--continue_scene=1
 			end
 
-			cls()
+			pal({8,10,12,136,141,1,5,14,7,137,2,3},1)
+			--cls()
+			
+			-- each bg
+			set=et\1
+			
+			if set==1 then
+				cls(3)
+				rh=127/5
+				rectfill(0,rh*1,127,rh*4,8)
+				rectfill(0,rh*2,127,rh*3,9)
+			elseif set==3 then
+				rh=127/6
+				rectfill(0,rh*0,127,rh*1,1)
+				rectfill(0,rh*1,127,rh*2,10)
+				rectfill(0,rh*2,127,rh*3,2)
+				rectfill(0,rh*3,127,rh*4,12)
+				rectfill(0,rh*4,127,rh*5,6)
+				rectfill(0,rh*5,127,rh*6,11)
+			end
+			if true then
+				-- smol flags
+				srand(st)
+				for i=0,2500 do
+				 circ(rnd(128),rnd(128),1,0)
+				end
+				srand()
+				f="123456389:9;29579;"
+				for j=0,200 do
+				 y=rnd(120)+sin(st/3+rnd())*8
+				 k=rnd(6)\1*3
+				 x=(rnd(200)-st*rnd(50))%200-3
+				 for i=1,3 do
+				  line(x,i+y,x+3,i+y,ord(f,k+i))
+				 end
+				end
+			end
+
+			-- fade ins on each beat
+			if set==1 or set==3 then
+				-- nothing
+			else
+				fet=et%1
+				srand(et\1)
+				for i=0,400 do
+					circfill(rnd(128),rnd(128),5-fet*(22\rnd()),rnd(16+et))
+				end
+			end
 		end
 		
 		-- tentacle greets
 		sc += 1
 		if current_scene == sc then
 			if scene_just_entered then
-				continue_scene=3
+				continue_scene=4
 				cm=0
 			end
 
+			cet=((et-32)*8)
 			_p={9,137,136,2,141,12,140,1,129,131,3,139,11,138,10,135}
+			_b={6,5,0,5,6,7,6,5,0,5,6,7,6,5,0,5,6,7,6,5,0,5,6,7,6,5,0,5}
 			for i,c in pairs(_p) do
 				pal(i-1,c,1)
+				if cet>0 and cet>i then
+					pal(i-1,_b[i],1)
+				end
 			end
-			cls(8)
 			
+			if cet<0 then
+				cls(8)
+			else
+				-- collapse
+				srand(et)
+				for i=0,300 do
+					x=rnd(128)
+					y=rnd(128)
+					c1=pget(x,y-1)
+					c2=pget(x,128-y-1)
+					if rnd()<cet/32 then
+						c1=8
+						c2=8
+					end
+					circ(x,y,1,c1)
+					circ(x,128-y,1,c2)
+				end
+			end
+			
+			-- hearts <3
+			srand(3)
+			for i=0,15 do
+				x=rnd(127)+sin(rnd()+i/15+et/16)*60+rnd()
+				y=rnd(127)+cos(rnd()+i/15+et/16)*60+rnd()
+				print("♥",x,y,7+i)
+			end
+			
+			if cet<0 then
 			midx=84
 			midy=64
 			nt=et+10
+			for ad=-1,4 do
 			for i=0,nt do
-				r=-(et/4)+(1/(nt+1))*i
-				m=sin(i/nt+et/6)
+				r=-((et+ad/4)/4)+(1/(nt+1))*i
+				m=sin(i/nt+et/6)+ad
 				wi=30+m*20
 				wo=34+m*25
 				ww=0.01+m*0.005
 				p1={midx+sin(r)*wi,midy+cos(r)*wi}
 				p2={midx+sin(r+ww)*wo,midy+cos(r+ww)*wo}
 				p3={midx+sin(r-ww)*wo,midy+cos(r-ww)*wo}
-				trifill(p1[1],p1[2],p2[1],p2[2],p3[1],p3[2],10+i)
-				--line(p1[1],p1[2],p2[1],p2[2],5-i)
-				--line(p2[1],p2[2],p3[1],p3[2],5-i)
-				--line(p3[1],p3[2],p1[1],p1[2],5-i)
+				c=7--ad+6
+				if ad==0 then
+					c=10+i
+				end
+				trifill(p1[1],p1[2],p2[1],p2[2],p3[1],p3[2],c)
+				--line(p1[1],p1[2],p2[1],p2[2])
+				--line(p2[1],p2[2],p3[1],p3[2])
+				--line(p3[1],p3[2],p1[1],p1[2])
 				--pset(midx,midy,1)
+			end
+			end
 			end
 			
 			cm+=1
@@ -536,13 +648,15 @@ function _draw()
 				for i=1,190 do
 					x=b*30
 					j=x+i
-					k=40+b*40-20+sin(i*.02+st*.2)*(3+b*5)
-					w=i*(.2+cos(t()/10+b*.1)*.1)
+					sm=min(1,max(0,1-cet/16))
+					k=40+b*40-20+sin(i*.02+st*.2)*(3+b*5)*sm
+					w=i*(.2+cos(t()/10+b*.1)*.1)-max(0,cet)
 					circfill(j,k,w,i*cos(st*.05)+cm)
 					pset(j-w*.7,k-w*.7,cm)
 				end
 			end
 			
+			if cet<0 then
 			for i=1,#greets do
 				-- skip blank colour lol
 				col=i+et
@@ -554,17 +668,25 @@ function _draw()
 				--gret="greet"
 				print(gret,10,30+i*6,col)
 			end
+			end
+
+			if et<2 then
+				srand()
+				for i=0,400 do
+					circfill(rnd(128),rnd(128),5-et*(22\rnd()),rnd(16+i))
+				end
+			end
 		end
 		
 		-- transision aaa
-		sc += 1
+		--[[sc += 1
 		if current_scene == sc then
 			if scene_just_entered then
 				continue_scene=0
 			end
 
 			cls()
-		end
+		end]]
 		
 		-- set the final scene num dynamically
 		-- so we don't need to stuff around so much
@@ -770,7 +892,7 @@ __sfx__
 010900000c9260c9560f9560c9560c95626905279152b9201f9201f9351b9501b9351a9501a93518950189350f9200f9510e940129000f9300f9510e9502e90016230162501b2001b2301b2401a2002423024212
 01060000242302423124131242312423124331241312423118321183211822118121182211832118121181210c4110c3110c2110c1110c2110c3110c1110c2110041100311002110041100011002110031100015
 0109002000b00182053fc043fc043fc003fc003fc113fc3118b5000b003fc043fc043fc003fc003fc0027c0000b0000b003fc043fc043fc003fc003fc113fc3118b5000b003fc043fc043fc003fc003fc0027c00
-0109002000124001310012100115001000010000100001002b9041f9001f9051b9001b9051a9001a90518900189050f9000f9010e900001300113100130001000c103169000013000130001301a9001a90018900
+01090020001240013100121001150c0500c0500c050116540c050116440c05011624000501162400050116140c0300f900000400e900001300113100130001000c103169000013000130001301a9001a90018900
 01120000000001b7251a71518725167151472513715117250f7151b7251a7151d7251b7151a7251b7151f7251d7150c9150c915000000c9120d915000000c9150d715119150f9150871514916089150a9150d912
 011200202400018b00249202892028920299202400029920299202892028911289122891228915299202892026921289202692024920249202491224912249121f920139221f922299001f9202b9302892626930
 011200201800018b00309203492034920359203000035920359203492034911349123491234915359203492032921349203292030920309203091230912309122b9302b9222b9222993029922299222893028922
@@ -783,7 +905,7 @@ __music__
 00 101e2c0b
 00 2d1e2c0b
 00 101e2e0d
-00 101e6e0b
+00 101e0c0b
 00 1120430b
 00 1015200d
 00 11210d0e
