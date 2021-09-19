@@ -157,6 +157,7 @@ twalk_offsety=60
 
 -- tentacle greets
 greets={
+	"jobe",
 	"mercury",
 	"defame",
 	"zep",
@@ -692,7 +693,7 @@ function _draw()
 				end
 				gret=greets[i]
 				--gret="greet"
-				print(gret,10,30+i*6,col)
+				print(gret,10,24+i*6,col)
 			end
 			end
 
