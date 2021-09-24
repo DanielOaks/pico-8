@@ -156,8 +156,22 @@ twalk_spread=70
 twalk_offsety=60
 
 -- tentacle greets
-greets={
+greets2={
+	"quadtrip",
+	"2daRRAY",
+	"t l c",
+	"cfd",
+	"5711",
 	"jobe",
+	"paniq",
+	"mUNROhOBERMAN",
+	"beanborg",
+	"SUPEROGUE",
+	"von_rostock",
+	"lucatron_",
+	"alcatraz",
+}
+greets={
 	"mercury",
 	"defame",
 	"zep",
@@ -691,9 +705,15 @@ function _draw()
 				if col==8 then
 					col+=1
 				end
-				gret=greets[i]
+				if et%16 < 8 then
+					gret=greets[i]
+				else
+					gret=greets2[i]
+				end
 				--gret="greet"
-				print(gret,10,24+i*6,col)
+				if gret then
+					print(gret,10,30+i*6,col)
+				end
 			end
 			end
 
