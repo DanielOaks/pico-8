@@ -3,7 +3,10 @@ version 33
 __lua__
 -- https://twitter.com/ctinney94/status/1343628200765698051
 
--- draw one of the recursive triangle things!
+-- draw the recursive triangle things!
+-- c is the 'level'
+-- a is a modifier
+-- 
 function r(x,y,a,c)
 	a+=0.25+o
 	w=x+sin(.5+a+o)*8*c
