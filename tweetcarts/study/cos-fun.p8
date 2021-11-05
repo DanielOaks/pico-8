@@ -1,12 +1,33 @@
 pico-8 cartridge // http://www.pico-8.com
 version 33
 __lua__
-pal({9,-7,-8,2,-3,12,-4,1,-15,-13,3,-5,11,-6,10,-9},1)s=sin::_::m=t()for d=-17,76do
-c=64-s(m-d/50)*5for i=0,1,.05do
-p=s(i-d/250)*s(d/50-i-m)v=c+s(i)*(20+d-p*5*(1+d/50))+s(d/50+i+m)*4b=64+cos(i)*(20+d+p*3*d/30)+cos(d*.01+i+m)*4if(i>0)line(x,y,v,b,p*8)
-x,y=v,b
+-- https://twitter.com/theoremnd/status/1312158415519588352
+
+pal(13,135,1)
+::_::
+cls(1)
+
+-- slow time down a bit
+n=t()/4
+
+-- o == colour mod
+o=0
+for h=-8,152,48 do
+	for i=0,128,2 do
+		j=cos(n+i/150)*12
+		k=cos(.5+n+i/150)*12
+		l=cos(n-i/75)*12
+		m=cos(.5+n-i/75)*12
+		a=h+j+l
+		b=h+k+l
+		line(i,a,i,b,12+o%3)
+		d=h+k+m+24
+		q=h+j+m+24
+		line(i+1,q,i+1,d,12+(o+1)%3)
+	end
+	o+=2
 end
-end
+
 flip()goto _
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

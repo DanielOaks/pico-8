@@ -1,12 +1,35 @@
 pico-8 cartridge // http://www.pico-8.com
 version 33
 __lua__
-pal({9,-7,-8,2,-3,12,-4,1,-15,-13,3,-5,11,-6,10,-9},1)s=sin::_::m=t()for d=-17,76do
-c=64-s(m-d/50)*5for i=0,1,.05do
-p=s(i-d/250)*s(d/50-i-m)v=c+s(i)*(20+d-p*5*(1+d/50))+s(d/50+i+m)*4b=64+cos(i)*(20+d+p*3*d/30)+cos(d*.01+i+m)*4if(i>0)line(x,y,v,b,p*8)
-x,y=v,b
+-- https://twitter.com/2darray/status/1109890993543884801
+
+::_::
+cls()
+
+-- k = -1, then 1
+for k=-1,1,2 do
+	for j=8-8*k,8+8*k,k do
+		x=59.5
+		q=1-mid(2-t()/4%2-j/16,1)^2
+		p=1-q
+		y=84.5+(16-j)/2*p+q*j/2
+		w=q/2
+		for i=0,1,.02 do
+			c=6+j%2
+			if (j*i==0 or j>15) then
+				c=4
+			end
+			if (sgn(x-60)==k) then
+				line(x,y,x+10,y-40,c)
+				line(x,y,x+10,y-41)
+			end
+			x+=cos(w)
+			y+=sin(w)
+			w-=p*.035*q*(1-i)
+		end
+	end
 end
-end
+
 flip()goto _
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

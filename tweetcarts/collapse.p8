@@ -1,13 +1,13 @@
 pico-8 cartridge // http://www.pico-8.com
-version 18
+version 33
 __lua__
 per=31000
 ::w::
 for i=0,per do
 x=rnd(128)
 y=rnd(128)
-pset(x,y,pget(x,y-1))
-pset(x,128-y,pget(x,128-y-1))
+circ(x,y,1,pget(x,y-1))
+circ(x,128-y,1,pget(x,128-y-1))
 end
 flip()
 goto w
