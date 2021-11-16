@@ -1,30 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 33
 __lua__
-::w::
-pal({0,129,1,13,6,7},1)
-
-st=t()
-
-cls(4)
-
-r=14
-rectfill(r+3,r,127-r-3,127-r,3)
-
-print("** pico-8 0.1.12c **", r+10,r+2, 4)
-print("32k ram system", r+5,r+12)
-print("6911 bytes free", r+36,r+19)
-print("ready", r+5,r+29)
-print("?", r+5,r+36)
-print(sub("loading...",1,-3+st%3), r+5,r+46)
-
-for y=0,5 do
-for x=20,107 do
-	circ(x,y*2+97+sin(st+y/6+x/60)*2.9,1,(x-st*20-y)%6)
-end
-end
-
-flip()goto w
+::w::pal(2,13,1)y=t()cls(2)rectfill(17,14,110,113,1)print("** pico-8 0.1.12c **",24,16,2)print("32k ram system",19,26)print("6911 bytes free",50,33)print("ready",19,43)print("?",19,50)print(sub("loading...",1,-3+y%3),19,60)flip()goto w
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
